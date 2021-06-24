@@ -1,6 +1,7 @@
 # projEuler
 Using Poject Euler problems to get to grips with Rust
 
+In the table belows, the problems have been listed in order of completion and not by the problem number.
 
 | Problem Number | Title                       | Solved? | Is solution brute force? | Additional Notes                                                                                                                                                                  |
 |----------------|-----------------------------|:---------:|:--------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
