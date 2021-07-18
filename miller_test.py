@@ -1,4 +1,3 @@
-import numpy as np
 
 class TestBases(object):
     def __init__(self, test_number):
@@ -14,16 +13,16 @@ class TestBases(object):
 
             https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
         '''
-        return {1: np.asarray([2]),
-                2: np.asarray([2,3]),
-                3: np.asarray([31,73]),
-                4: np.asarray([2,3,5]),
-                5: np.asarray([2,3,5,7]),
-                6: np.asarray([2,7, 61]),
-                7: np.asarray([2,13, 23, 1662803]),
-                8: np.asarray([2,3,5,7,11]),
-                9: np.asarray([2,3,5,7,11,13]),
-                10: np.asarray([2,3,5,7,11,13,17]),
+        return {1: [2],
+                2: [2,3],
+                3: [31,73],
+                4: [2,3,5],
+                5: [2,3,5,7],
+                6: [2,7, 61],
+                7: [2,13, 23, 1662803],
+                8: [2,3,5,7,11],
+                9: [2,3,5,7,11,13],
+                10: [2,3,5,7,11,13,17],
                 }
 
     def get_hash_category(self, test_number):
@@ -127,7 +126,7 @@ def is_prime_miller_test(test_number):
 
     # Step 1:   Factorise out power of 2 from n-1 
     #           Such that, test_number = (2^r)(d) + 1 where d is odd
-    r, d = factorise_power2_out(test_number)
+    _, d = factorise_power2_out(test_number)
 
     # print("num = {} r = {} d = {}".format(test_number, r, d))
 
