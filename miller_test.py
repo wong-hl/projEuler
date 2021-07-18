@@ -63,21 +63,12 @@ def factorise_power2_out(test_number):
         two_to_r = (1 << r) 
         d = (test_number - 1) // two_to_r
 
-        if two_to_r*d == test_number - 1:
+        # print("r = {} d = {} 2^r*d = {}".format(r, d, two_to_r*d))
+
+        if two_to_r*d == test_number - 1 and d & 1 == 1:
             return r, d
         else:
             r -= 1
-
-    # # print("r = {} d = {} 2^r*d = {}".format(r, d, two_to_r*d))
-
-    # while two_to_r*d != test_number -1:
-    #     r -= 1
-    #     two_to_r = (1 << r) 
-    #     d = (test_number - 1) // (1 << r) 
-
-    #     # print("r = {} d = {}".format(r, d))
-
-    # return r, d
 
 
 def is_prime_miller_test(test_number):
@@ -89,49 +80,54 @@ def is_prime_miller_test(test_number):
 
     r, d = factorise_power2_out(test_number)
 
-    # print("r = {} d = {}".format(r, d))
+    # print("num = {} r = {} d = {}".format(test_number, r, d))
 
     bases = TestBases(test_number)
     test_bases = bases.get_base()
 
-    for a in test_bases:
-
-        if 1 < math.gcd(a, test_number) < test_number:
-            return False
-
-        # x = (a ** d) % test_number
-        # print("{}".format(x))
-
-        # if x == 1 or x == test_number - 1:
-        #     continue
-        
-        # for _ in range(r-1):
-        #     x = x*x % test_number
-
-        #     if x == test_number - 1:
-        #         continue
-        #     else:
-        #         break
-
-        # return False
-
-        if miller_inner(a, test_number, d, r) == False:
+    for base in test_bases:
+        if not witness_loop(base, test_number, d, r):
             return False
 
     return True
 
-def miller_inner(witness, test_number, d, r):
-    x = (witness ** d) % test_number
-    # print("{}".format(x))
+def modular_exponentiation(base, power, mod_val):
+    # (base^power) % mod_val
+    soln = 1
+
+    # Update base if it is larger than mod_val
+    base = base % mod_val
+
+    while power > 0:
+        # Power is odd
+        if power & 1:
+            soln = (soln*base) % mod_val
+
+        # Power is even and divide by 2
+        power >>= 1
+        base = (base*base) % mod_val
+
+    return soln
+
+
+
+def witness_loop(witness, test_number, d, r):
+    # x = (witness ** d) % test_number
+    x = modular_exponentiation(witness, d, test_number)
+    # print("x = {}".format(x))
 
     if x == 1 or x == test_number - 1:
-        return
+        return True
     
-    for _ in range(r-1):
-        x = x*x % test_number
+    while d != test_number - 1:
+        x = (x*x) % test_number
+        d *= 2
+        # print("x = {}".format(x))
 
         if x == test_number - 1:
-            return
+            return True 
+        elif x == 1:
+            return False
 
     return False
 
@@ -151,7 +147,7 @@ if __name__ == "__main__":
 
     my_primes = []
 
-    for i in range(2, 300):
+    for i in range(2, 272):
         if is_prime_miller_test(i):
             my_primes.append(i)
             print("i = {} is prime ".format(i, ))
