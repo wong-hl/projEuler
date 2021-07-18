@@ -9,6 +9,11 @@ class TestBases(object):
         self.initialise(test_number)
 
     def create_hash_map(self):
+        '''
+            This corresponds to the witnesses that need to be used for the Miller-Rabin Test
+
+            https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
+        '''
         return {1: np.asarray([2]),
                 2: np.asarray([2,3]),
                 3: np.asarray([31,73]),
@@ -22,6 +27,24 @@ class TestBases(object):
                 }
 
     def get_hash_category(self, test_number):
+        '''
+
+            References: https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
+                        https://mathcrypto.wordpress.com/2014/11/21/looking-for-a-good-witness/
+                        https://mathcrypto.wordpress.com/2014/11/22/a-primality-proving-algorithm-using-least-strong-pseudoprimes/
+                        https://arxiv.org/pdf/1207.0063.pdf
+                        https://kconrad.math.uconn.edu/blurbs/ugradnumthy/millerrabin.pdf
+
+            This uses the theory that strong psuedoprimes over multiple bases are rare. These are the 
+            thresholds for which strong psuedoprimes need to be used for the Miller-Rabin test to 
+            guarantee that that number being tested will be primes 
+
+            N.B. A strong probable prime to a given base (x) if one of the congruence relations holds:
+            .. math::
+                a^d \equiv 1 (\mod{n})
+                a^{2^r \times d} \equiv -1 (\mod{n})
+
+        '''
         if test_number < 2047:
             return 1
         elif test_number < 1373653:
@@ -55,44 +78,74 @@ class TestBases(object):
     def get_base(self):
         return self.which_base
 
-def factorise_power2_out(test_number):
+def factorise_power2_out(input_number):
+    '''
+        Takes the input number to factorise number into the form (2^r)(d) + 1
 
-    r = (test_number).bit_length() - 1 
+        Returns:
+        r:  Exponent of 2
+        d:  Constant to multiply 2^r to obtain number - 1
+    '''
+
+    # Smallest exponent of 2 within the input number
+    r = input_number.bit_length() - 1 
 
     while True:
+        # 2^r
         two_to_r = (1 << r) 
-        d = (test_number - 1) // two_to_r
+        # Perform integer division to obtain d 
+        d = (input_number - 1) // two_to_r
 
         # print("r = {} d = {} 2^r*d = {}".format(r, d, two_to_r*d))
 
-        if two_to_r*d == test_number - 1 and d & 1 == 1:
+        # Recovering original number implies factorisation is successful
+        if two_to_r*d == input_number - 1 and d & 1 == 1:
             return r, d
         else:
             r -= 1
 
 
 def is_prime_miller_test(test_number):
+    '''
+        Uses the Miller-Rabin Test to determine if a number is prime 
 
+        Argument:
+        test_number -- Number for which primality is to be tested 
+
+        Returns:
+        bool -- True if Prime, False if Composite
+    '''
+
+    # Handles edge cases 
     if test_number == 2:
         return True
     elif test_number & 1 == 0:
+        # Even => always composite unless == 2
         return False
+    elif test_number < 2:
+        raise ValueError("Input must be larger than 1")
 
+    # Step 1:   Factorise out power of 2 from n-1 
+    #           Such that, test_number = (2^r)(d) + 1 where d is odd
     r, d = factorise_power2_out(test_number)
 
     # print("num = {} r = {} d = {}".format(test_number, r, d))
 
+    # Step 2:   Get witnesses to test if number is prime
     bases = TestBases(test_number)
     test_bases = bases.get_base()
 
     for base in test_bases:
-        if not witness_loop(base, test_number, d, r):
+        if not witness_loop(base, test_number, d):
             return False
 
+    # Passing all test => Primes
     return True
 
 def modular_exponentiation(base, power, mod_val):
-    # (base^power) % mod_val
+    '''
+        Performs modular exponentiation to obtain (base^power) % mod_val
+    '''
     soln = 1
 
     # Update base if it is larger than mod_val
@@ -111,8 +164,12 @@ def modular_exponentiation(base, power, mod_val):
 
 
 
-def witness_loop(witness, test_number, d, r):
-    # x = (witness ** d) % test_number
+def witness_loop(witness, test_number, d):
+    '''
+        Tests for a given witness, whether the test number is a strong psuedoprime
+    '''
+
+    # x = (witness ^ d) % test_number
     x = modular_exponentiation(witness, d, test_number)
     # print("x = {}".format(x))
 
@@ -134,10 +191,6 @@ def witness_loop(witness, test_number, d, r):
 
 
 if __name__ == "__main__":
-    # base = TestBases()
-    # base.initialise(5555)
-
-    # print("{}".format(base.get_base()))
 
     oeis_primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,
         61,67,71,73,79,83,89,97,101,103,107,109,113,127,
