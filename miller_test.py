@@ -1,4 +1,5 @@
 import numpy as np
+import math
 class TestBases(object):
     def __init__(self, test_number):
         self.which_base = None
@@ -81,34 +82,58 @@ def factorise_power2_out(test_number):
 
 def is_prime_miller_test(test_number):
 
-    if test_number & 1 == 0 and test_number != 2:
+    if test_number == 2:
+        return True
+    elif test_number & 1 == 0:
         return False
 
     r, d = factorise_power2_out(test_number)
 
-    print("r = {} d = {}".format(r, d))
+    # print("r = {} d = {}".format(r, d))
 
     bases = TestBases(test_number)
     test_bases = bases.get_base()
 
     for a in test_bases:
-        x = (a ** d) % test_number
-        print("{}".format(x))
 
-        if x == 1 or x == test_number - 1:
-            continue
+        if 1 < math.gcd(a, test_number) < test_number:
+            return False
+
+        # x = (a ** d) % test_number
+        # print("{}".format(x))
+
+        # if x == 1 or x == test_number - 1:
+        #     continue
         
-        for _ in range(r-1):
-            x = x*x % test_number
+        # for _ in range(r-1):
+        #     x = x*x % test_number
 
-            if x == test_number - 1:
-                continue
-            else:
-                break
+        #     if x == test_number - 1:
+        #         continue
+        #     else:
+        #         break
 
-        return False
+        # return False
+
+        if miller_inner(a, test_number, d, r) == False:
+            return False
 
     return True
+
+def miller_inner(witness, test_number, d, r):
+    x = (witness ** d) % test_number
+    # print("{}".format(x))
+
+    if x == 1 or x == test_number - 1:
+        return
+    
+    for _ in range(r-1):
+        x = x*x % test_number
+
+        if x == test_number - 1:
+            return
+
+    return False
 
 
 
@@ -118,6 +143,6 @@ if __name__ == "__main__":
 
     # print("{}".format(base.get_base()))
 
-    for i in range(3, 20, 2):
+    for i in range(2, 30):
         print("i = {} is prime = {}".format(i, is_prime_miller_test(i)))
-        print("")
+        # print("")
