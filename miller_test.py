@@ -1,5 +1,5 @@
 import numpy as np
-import math
+
 class TestBases(object):
     def __init__(self, test_number):
         self.which_base = None
