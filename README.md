@@ -19,6 +19,8 @@ In the table belows, the problems have been listed in order of completion and no
 |       66       |     Diophantine Equation    |   Yes   | Well, I still needed to solve all equations less than 1000? So, Yes?| Originally intended to determine if there was a way to know the periodicity of sqrt(d) as a continued fraction to determine the length. This would be an indication of which convergent value corresponds to the fundamental solution. However, I am unable to find a reliable method in literature. I thought it might be related to if d is congruent to modulo 4?|
 | 75 | Singular Integer Right Triangles | Yes | No | Used the Euclid's formula to find the Pythagorean Triplets. Exploited 1) the fact that all coprime pairs lie on three branches to find m and n 2) all perimeters (sum of a, b, c) are even 3) the perimeter can be expressed in terms of m and n so a, b and c never need to be found 4) only found the primitive triplets as the rest are a multiple of it |
 |       76       |     Counting Summations     |  Yes   |           Maybe?           | Utilised Euler's Pentagonal Theorem to obtain the partition recurrence relation. Cached prior solutions to solve solution in approx. 500ms.|
+|77|     Prime Summations     |WIP| | |
+|96|Su Doku|WIP| | |
 
 In accordance to the rules of sharing solutions outside Project Euler - solutions to problems outside the first 100 should not be made outside the Project Euler discussion forum - the code for solving those problems are in a private repo. The table below details which those problems were solved and that exists within a private repo. 
 
