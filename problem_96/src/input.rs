@@ -1,6 +1,5 @@
-use std::{collections::HashMap, fs::File, io::prelude::*, path::Path};
 use ndarray::{Array, Array2};
-
+use std::{collections::HashMap, fs::File, io::prelude::*, path::Path};
 
 fn read_from_file(file_name: String) -> Result<String, String> {
     // https://doc.rust-lang.org/stable/rust-by-example/std_misc/file/open.html
@@ -20,13 +19,19 @@ fn read_from_file(file_name: String) -> Result<String, String> {
         Err(why) => panic!("couldn't read {}: {}", file_display, why),
         Ok(_) => Ok(file_contents),
     }
-
 }
 
-fn process_input(file_name: String, num_puzzles: usize, identifier: String) -> Result<HashMap<usize, Array2<u32>>, String> {
+pub fn process_input(
+    file_name: String,
+    num_puzzles: usize,
+    identifier: String,
+) -> Result<HashMap<usize, Array2<u32>>, String> {
     let file_contents = read_from_file(file_name)?;
 
-    let mut sorted_input: HashMap<usize, ndarray::ArrayBase<ndarray::OwnedRepr<u32>, ndarray::Dim<[usize; 2]>>> = HashMap::with_capacity(num_puzzles);
+    let mut sorted_input: HashMap<
+        usize,
+        ndarray::ArrayBase<ndarray::OwnedRepr<u32>, ndarray::Dim<[usize; 2]>>,
+    > = HashMap::with_capacity(num_puzzles);
 
     let mut storage_vector: Vec<u32> = Vec::with_capacity(81);
 
@@ -34,13 +39,16 @@ fn process_input(file_name: String, num_puzzles: usize, identifier: String) -> R
         if counter == 0 {
             continue;
         } else if line.contains(identifier.as_str()) || line.contains("End") {
-            let grid_num = counter/10;
-            sorted_input.insert(grid_num, Array::from_shape_vec((9,9), storage_vector).expect("Unable to reshape to 9 by 9"));
+            let grid_num = counter / 10;
+            sorted_input.insert(
+                grid_num,
+                Array::from_shape_vec((9, 9), storage_vector).expect("Unable to reshape to 9 by 9"),
+            );
             storage_vector = Vec::with_capacity(81);
         } else {
-            line.chars().for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
+            line.chars()
+                .for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
         }
-
     }
 
     Ok(sorted_input)
@@ -58,5 +66,4 @@ fn process_input_works() {
     let output = process_input(String::from("p096_sudoku.txt"), 50, String::from("Grid")).unwrap();
     println!("{:?}", output);
     assert!(!output.is_empty());
-
 }
