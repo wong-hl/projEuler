@@ -1,5 +1,5 @@
 use std::{collections::HashMap, fs::File, io::prelude::*, path::Path};
-use ndarray::Array2;
+use ndarray::{Array, Array2};
 
 
 fn read_from_file(file_name: String) -> Result<String, String> {
@@ -23,10 +23,25 @@ fn read_from_file(file_name: String) -> Result<String, String> {
 
 }
 
-fn process_input(file_name: String, num_puzzles: usize) -> Result<HashMap<u8, Array2<u8>>, String> {
-    let file_contents = read_from_file(file_name);
+fn process_input(file_name: String, num_puzzles: usize, identifier: String) -> Result<HashMap<usize, Array2<u32>>, String> {
+    let file_contents = read_from_file(file_name)?;
 
-    let sorted_input = HashMap::with_capacity(num_puzzles);
+    let mut sorted_input: HashMap<usize, ndarray::ArrayBase<ndarray::OwnedRepr<u32>, ndarray::Dim<[usize; 2]>>> = HashMap::with_capacity(num_puzzles);
+
+    let mut storage_vector: Vec<u32> = Vec::with_capacity(81);
+
+    for (counter, line) in file_contents.lines().enumerate() {
+        if counter == 0 {
+            continue;
+        } else if line.contains(identifier.as_str()) || line.contains("End") {
+            let grid_num = counter/10;
+            sorted_input.insert(grid_num, Array::from_shape_vec((9,9), storage_vector).expect("Unable to reshape to 9 by 9"));
+            storage_vector = Vec::with_capacity(81);
+        } else {
+            line.chars().for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
+        }
+
+    }
 
     Ok(sorted_input)
 }
@@ -36,4 +51,12 @@ fn path_to_file_works() {
     if let Ok(output) = read_from_file(String::from("p096_sudoku.txt")) {
         assert!(!output.is_empty());
     }
+}
+
+#[test]
+fn process_input_works() {
+    let output = process_input(String::from("p096_sudoku.txt"), 50, String::from("Grid")).unwrap();
+    println!("{:?}", output);
+    assert!(!output.is_empty());
+
 }
