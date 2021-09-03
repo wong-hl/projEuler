@@ -4,7 +4,7 @@ Using Poject Euler problems to get to grips with Rust
 In the table belows, the problems have been listed in order of completion and not by the problem number.
 
 | Problem Number | Title                       | Solved? | Is solution brute force? | Additional Notes                                                                                                                                                                  |
-|----------------|-----------------------------|:---------:|:--------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------------:|:---------------------------:|:---------:|:--------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |        1       |     Multiples of 3 and 5    |   Yes   |            No            |                                                                           Used sum of arithmetic series                                                                           |
 |        2       |    Even Fibonacci Numbers   |   Yes   |            No            |                                           Used properties of addition to determine if even but still needs to find all Fibonacci numbers                                          |
 |        3       |     Largest Prime Factor    |   Yes   |  No but could be better  |                                                           Combined Fermat factorisation method and Seive of Eratosthenes                                                          |
