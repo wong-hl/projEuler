@@ -19,6 +19,7 @@ In the table belows, the problems have been listed in order of completion and no
 |       66       |     Diophantine Equation    |   Yes   | Well, I still needed to solve all equations less than 1000? So, Yes?| Originally intended to determine if there was a way to know the periodicity of sqrt(d) as a continued fraction to determine the length. This would be an indication of which convergent value corresponds to the fundamental solution. However, I am unable to find a reliable method in literature. I thought it might be related to if d is congruent to modulo 4?|
 | 75 | Singular Integer Right Triangles | Yes | No | Used the Euclid's formula to find the Pythagorean Triplets. Exploited 1) the fact that all coprime pairs lie on three branches to find m and n 2) all perimeters (sum of a, b, c) are even 3) the perimeter can be expressed in terms of m and n so a, b and c never need to be found 4) only found the primitive triplets as the rest are a multiple of it |
 |       76       |     Counting Summations     |  Yes   |           Maybe?           | Utilised Euler's Pentagonal Theorem to obtain the partition recurrence relation. Cached prior solutions to solve solution in approx. 500ms.|
+|78|Coin partitions|  Yes   | No | Used formulation from 76. But, 1) used a vector to store previous values, and 2) only the significant decimal digits required in the modulo are stored. If the full number is stored, there will be overflow and exceed capacity of an i32.|
 |77|     Prime Summations     |WIP| | |
 |96|Su Doku|WIP| | |
 
