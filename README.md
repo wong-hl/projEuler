@@ -20,7 +20,7 @@ In the table belows, the problems have been listed in order of completion and no
 | 75 | Singular Integer Right Triangles | Yes | No | Used the Euclid's formula to find the Pythagorean Triplets. Exploited 1) the fact that all coprime pairs lie on three branches to find m and n 2) all perimeters (sum of a, b, c) are even 3) the perimeter can be expressed in terms of m and n so a, b and c never need to be found 4) only found the primitive triplets as the rest are a multiple of it |
 |       76       |     Counting Summations     |  Yes   |           Maybe?           | Utilised Euler's Pentagonal Theorem to obtain the partition recurrence relation. Cached prior solutions to solve solution in approx. 500ms.|
 |78|Coin Partitions|  Yes   | No | Used formulation from 76. But, 1) used a vector to store previous values, and 2) only the significant decimal digits required in the modulo are stored. If the full number is stored, there will be overflow and exceed capacity of an i32.|
-|77|     Prime Summations     |WIP| | |
+|77|Prime Summations|Yes|No|Used Euler transformation for integer sequences with an intermediate series to obtain solution|
 |96|Su Doku|WIP| | |
 
 In accordance to the rules of sharing solutions outside Project Euler - solutions to problems outside the first 100 should not be made outside the Project Euler discussion forum - the code for solving those problems are in a private repo. The table below details which those problems were solved and that exists within a private repo. 
