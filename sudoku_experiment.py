@@ -1,5 +1,5 @@
 import numpy as np
-
+from copy import deepcopy
 
 def find_trivial_solutions(candidate_solutions, which_subset):
 
@@ -16,7 +16,6 @@ def find_trivial_solutions(candidate_solutions, which_subset):
             subset = candidate_solutions[i, :]
         elif which_subset == "column":
             subset = candidate_solutions[:, i]
-
 
         for index, _ in enumerate(subset):
 
@@ -64,18 +63,24 @@ def update_candidate_solutions(candidate_solutions):
                 fixed_solutions = row | col | sector
 
                 if cell_val & fixed_solutions: 
-                    candidate_solutions[i, j] = cell_val - fixed_solutions
+                    difference = cell_val - fixed_solutions
+                    if difference:
+                        candidate_solutions[i, j] = difference
+                    else:
+                        raise Exception("Invalid solution present")
 
     return candidate_solutions
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
+    print(f"target set: {preemptive_set}\n mask: {mask}\n candidateset: {candidate_set_subset}\n")
 
     for counter, in_set in enumerate(mask):
-        if not in_set:
-            val = candidate_set_subset[counter]
-            if len(val) != 1 :
-                candidate_set_subset[counter] = val - (val & preemptive_set)
+        val = candidate_set_subset[counter]
+        if not in_set and len(val) != 1 :
+            candidate_set_subset[counter] = val - (val & preemptive_set)
 
+    print(candidate_set_subset)
+    print()
     return candidate_set_subset
 
 def solve_preemptive_sets(candidate_solutions):
@@ -120,6 +125,30 @@ def is_sufficiently_solved(candidate_solutions):
         return False
     else:
         return True
+    
+def first_guess(candidate_solutions):
+    for i in range(9):
+        for j in range(9):
+            if len(candidate_solutions[i, j]) != 1:
+                return candidate_solutions[i,j], i, j
+
+
+class GuessingTree:
+    def __init__(self):
+        self.name = name
+        self.index = index
+        self.is_violation = is_violation
+        self.children = []
+        if children is not None:
+            for child in children:
+                self.add_child(child)
+
+    def __repr__(self):
+        return f"Name: {self.name}, Index: {self.index}"
+
+    def add_child(self, node):
+        assert isinstance(node, GuessingTree)
+        self.children.append(node)
 
 # Hardest (50)
 puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
@@ -196,12 +225,96 @@ if not solved:
 
     while not solved:
         candidate_solutions, num_sets_found = solve_preemptive_sets(candidate_solutions)
+
         if prev_num_sets_found == num_sets_found:
             print("Guessing required")
             break
+
         prev_num_sets_found = num_sets_found
 
     print(candidate_solutions)
 
+# if not solved:
+#     row = candidate_solutions[0, :]
+#     block = candidate_solutions[0:3, 0:3]
+#     for i in range(3):
+#         target_cell = candidate_solutions[0, i] 
+#         if len(target_cell) != 1:
+#             col = candidate_solutions[i, :]
+#             target_cell = list(target_cell)
+#             for val in target_cell:
+#                 print(val)
+#                 candidate_solutions[0,i] = {val}
+#                 try:
+#                     temp = update_candidate_solutions(candidate_solutions)
+#                     print(temp)
+#                 except Exception:
+#                     continue
+
+#                 candidate_solutions = temp
+#                 break
+
+
+#     print("guess")
+
 if not solved:
+    guess_depth = 0
+    guesses = GuessingTree(guess_depth, None, False)
+
+    for i in range(9):
+        for j in range(9):
+            else_reached = False
+
+            cell_val = candidate_solutions[i, j]
+            cell_len = len(cell_val)
+            print(f"{i} {j} {cell_val}")
+
+            if cell_len == 1:
+                continue
+
+            cell_val = list(cell_val)
+
+            for val in cell_val:
+                guesses
+
+
+
+            for val in cell_val:
+                guess = deepcopy(candidate_solutions)
+                guess[i,j] = {val}
+                try:
+                    temp = update_candidate_solutions(guess)
+                except Exception:
+                    continue
+                else:
+                    candidate_solutions = temp
+                    else_reached = True
+                    print(candidate_solutions)
+                    break
+
+            if not else_reached:
+                raise BaseException
+
+    # row = candidate_solutions[0, :]
+    # block = candidate_solutions[0:3, 0:3]
+    # for i in range(3):
+    #     target_cell = candidate_solutions[0, i] 
+    #     if len(target_cell) != 1:
+    #         col = candidate_solutions[i, :]
+    #         target_cell = list(target_cell)
+    #         for val in target_cell:
+    #             print(val)
+    #             candidate_solutions[0,i] = {val}
+    #             try:
+    #                 temp = update_candidate_solutions(candidate_solutions)
+    #                 print(temp)
+    #             except Exception:
+    #                 continue
+
+    #             candidate_solutions = temp
+    #             break
+
+
     print("guess")
+
+print(candidate_solutions)
