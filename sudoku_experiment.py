@@ -2,6 +2,7 @@ import numpy as np
 
 
 def find_trivial_solutions(candidate_solutions, which_subset):
+    num_solns = 0
     # print("\n")
     # print(f"Solving for {which_subset} subset")
     for i in range(9):
@@ -37,6 +38,7 @@ def find_trivial_solutions(candidate_solutions, which_subset):
                     subset[index] = unique
                     # print(subset)
                     # print()
+                    num_solns += 1
 
         if which_subset == "square":
             candidate_solutions[row_index:row_index+3,
@@ -48,7 +50,7 @@ def find_trivial_solutions(candidate_solutions, which_subset):
 
     candidate_solutions = update_candidate_solutions(candidate_solutions)
 
-    return candidate_solutions
+    return candidate_solutions, num_solns
 
 def update_candidate_solutions(candidate_solutions):
     for i in range(9):
@@ -128,6 +130,13 @@ def solve_preemptive_sets(candidate_solutions):
 
     return candidate_solutions, num_sets_found
 
+def is_sufficiently_solved(candidate_solutions):
+    target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
+    if target_cells:
+        return False
+    else:
+        return True
+
 # Hardest (50)
 puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 7, 0, 0, 0],
@@ -175,27 +184,42 @@ print(candidate_solutions)
 
 
 subset_names = ["square", "row", "column"]
-target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
+total_no_soln = 0
 total_iters = 0
-counter = 0
 
-solved = False
+solved = is_sufficiently_solved(candidate_solutions)
 
-while target_cells:
+while not solved:
     counter = total_iters % 3
-    candidate_solutions = find_trivial_solutions(candidate_solutions, subset_names[counter])
-    target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
-    total_iters += 1
+    candidate_solutions, num_sol_found = find_trivial_solutions(candidate_solutions, subset_names[counter])
+    solved = is_sufficiently_solved(candidate_solutions)
 
-    if total_iters > 15:
-        print("did not reach exit condidion")
+    if num_sol_found == 0:
+        total_no_soln += 1
+        print(total_iters)
+
+    if total_no_soln > 2:
+        print("No trivial solution found")
         break
 
-print(candidate_solutions)
-print()
+if solved:
+    print("\nSolved using trivial method")
+    print(candidate_solutions)
 
 if not solved:
+    print()
     candidate_solutions = update_candidate_solutions(candidate_solutions)
-    candidate_solutions = solve_preemptive_sets(candidate_solutions)
+    solved = is_sufficiently_solved(candidate_solutions)
+    prev_num_sets_found = 1
 
-print(candidate_solutions)
+    while not solved:
+        candidate_solutions, num_sets_found = solve_preemptive_sets(candidate_solutions)
+        if prev_num_sets_found == num_sets_found:
+            print("Guessing required")
+            break
+        prev_num_sets_found = num_sets_found
+
+    print(candidate_solutions)
+
+if not solved:
+    print("guess")
