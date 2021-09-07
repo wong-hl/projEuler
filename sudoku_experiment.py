@@ -2,8 +2,8 @@ import numpy as np
 
 
 def find_trivial_solutions(candidate_solutions, which_subset):
-    print("\n")
-    print(f"Solving for {which_subset} subset")
+    # print("\n")
+    # print(f"Solving for {which_subset} subset")
     for i in range(9):
         if which_subset == "square":
             row_index = (i//3)*3
@@ -16,7 +16,7 @@ def find_trivial_solutions(candidate_solutions, which_subset):
         elif which_subset == "column":
             subset = candidate_solutions[:, i]
 
-        print(subset)
+        # print(subset)
 
         for index, _ in enumerate(subset):
             candidate = subset[index]
@@ -30,13 +30,13 @@ def find_trivial_solutions(candidate_solutions, which_subset):
                 # print(f"in other sets {in_other_sets}")
                 unique = candidate - set(in_other_sets)
                 if unique:
-                    print(f"{in_other_sets} {candidate}, {unique}")
+                    # print(f"{in_other_sets} {candidate}, {unique}")
                     # unique_val = min(unique)
                     # subset = [
                     #     adj_set - unique if unique_val in adj_set else adj_set for adj_set in subset]
                     subset[index] = unique
-                    print(subset)
-                    print()
+                    # print(subset)
+                    # print()
 
         if which_subset == "square":
             candidate_solutions[row_index:row_index+3,
@@ -62,35 +62,37 @@ def update_candidate_solutions(candidate_solutions):
                 row_sec = (i // 3)*3
                 row = set().union(*[x for x in candidate_solutions[i, :] if len(x)==1])
                 col = set().union(*[x for x in candidate_solutions[:, j] if len(x)==1])
-                sector = set().union(*[x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] if len(x) == 1])
+                sector = set().union(*[x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1])
                 fixed_solutions = row | col | sector
-                # print(cell_val & fixed_solutions)
+                # print(f"row: {row} col: {col} sec: {sector} fixed = {fixed_solutions}")
+                # print(f"intersection: {cell_val & fixed_solutions}")
+                # print()
                 if cell_val & fixed_solutions: 
                     candidate_solutions[i, j] = cell_val - fixed_solutions
 
     return candidate_solutions
 
 # Hardest (50)
-# puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
-# [0, 0, 0, 1, 0, 7, 0, 0, 0],
-# [7, 0, 6, 0, 3, 0, 5, 0, 0],
-# [0, 7, 0, 0, 0, 9, 0, 8, 0],
-# [9, 0, 0, 0, 2, 0, 0, 0, 4],
-# [0, 1, 0, 8, 0, 0, 0, 5, 0],
-# [0, 0, 9, 0, 4, 0, 3, 0, 1],
-# [0, 0, 0, 7, 0, 2, 0, 0, 0],
-# [0, 0, 0, 0, 0, 8, 0, 0, 6]])
+puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
+[0, 0, 0, 1, 0, 7, 0, 0, 0],
+[7, 0, 6, 0, 3, 0, 5, 0, 0],
+[0, 7, 0, 0, 0, 9, 0, 8, 0],
+[9, 0, 0, 0, 2, 0, 0, 0, 4],
+[0, 1, 0, 8, 0, 0, 0, 5, 0],
+[0, 0, 9, 0, 4, 0, 3, 0, 1],
+[0, 0, 0, 7, 0, 2, 0, 0, 0],
+[0, 0, 0, 0, 0, 8, 0, 0, 6]])
 
 # Easiest (1)
-puzzle = np.asarray([[0, 0, 3, 0, 2, 0, 6, 0, 0],
-                     [9, 0, 0, 3, 0, 5, 0, 0, 1],
-                     [0, 0, 1, 8, 0, 6, 4, 0, 0],
-                     [0, 0, 8, 1, 0, 2, 9, 0, 0],
-                     [7, 0, 0, 0, 0, 0, 0, 0, 8],
-                     [0, 0, 6, 7, 0, 8, 2, 0, 0],
-                     [0, 0, 2, 6, 0, 9, 5, 0, 0],
-                     [8, 0, 0, 2, 0, 3, 0, 0, 9],
-                     [0, 0, 5, 0, 1, 0, 3, 0, 0]])
+# puzzle = np.asarray([[0, 0, 3, 0, 2, 0, 6, 0, 0],
+#                      [9, 0, 0, 3, 0, 5, 0, 0, 1],
+#                      [0, 0, 1, 8, 0, 6, 4, 0, 0],
+#                      [0, 0, 8, 1, 0, 2, 9, 0, 0],
+#                      [7, 0, 0, 0, 0, 0, 0, 0, 8],
+#                      [0, 0, 6, 7, 0, 8, 2, 0, 0],
+#                      [0, 0, 2, 6, 0, 9, 5, 0, 0],
+#                      [8, 0, 0, 2, 0, 3, 0, 0, 9],
+#                      [0, 0, 5, 0, 1, 0, 3, 0, 0]])
 
 candidate_solutions = np.empty((9, 9), dtype=set)
 # print(len(candidate_solutions))
@@ -121,6 +123,8 @@ target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
 total_iters = 0
 counter = 0
 
+solved = False
+
 while target_cells:
     counter = total_iters % 3
     candidate_solutions = find_trivial_solutions(candidate_solutions, subset_names[counter])
@@ -132,3 +136,51 @@ while target_cells:
         break
 
 print(candidate_solutions)
+print()
+
+if not solved:
+    candidate_solutions = update_candidate_solutions(candidate_solutions)
+    for i in range(9):
+        for j in range(9):
+            col_sec = (j // 3)*3
+            row_sec = (i // 3)*3
+            cell_val = candidate_solutions[i, j]
+            cell_len = len(cell_val)
+            if cell_len == 1:
+                continue
+            print(f"For cell ({i} {j}) with value {cell_val}")
+            # row = candidate_solutions[i, :]
+            # col = candidate_solutions[:, j]
+            # sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
+            # row = [x.issubset(cell_val) for x in candidate_solutions[i, :]]
+            # col = [x.issubset(cell_val) for x in candidate_solutions[:, j]]
+            # sector = [x.issubset(cell_val) for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()]
+            row_mask = candidate_solutions[i, :] <= cell_val
+            col_mask = candidate_solutions[:, j] <= cell_val
+            sector_mask = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] <= cell_val
+            # print(sector_mask)
+
+            if row_mask.sum() == cell_len:
+                row = candidate_solutions[i, :]
+                print(f"row contains preemptive set {row}")
+            if len(col_mask) == cell_len:
+                col = candidate_solutions[:, j]
+                print(f"col contains preemptive set {col}")
+            if len(sector_mask.flatten()) == cell_len:
+                sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
+                print(f"sector contains preemptive set {sector}")
+                sector_mask = sector_mask.flatten()
+                for counter, in_set in enumerate(sector_mask):
+                    if not in_set:
+                        val = sector[counter]
+                        if len(val) != 1 :
+                            sector[counter] = val - (val & cell_val)
+                candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] = sector.reshape((3,3) )
+                print(f"sector contains preemptive set {sector}")
+
+
+            # row = candidate_solutions[i, :]
+            # col = candidate_solutions[:, j]
+            # sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
+            # print(f"row: {row} \ncol: {col} \nsquare:{sector}\n")
+
