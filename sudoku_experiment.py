@@ -1,5 +1,4 @@
 import numpy as np
-from copy import deepcopy
 
 
 def find_trivial_solutions(candidate_solutions, which_subset):
@@ -24,7 +23,6 @@ def find_trivial_solutions(candidate_solutions, which_subset):
             if len(candidate) == 1:
                 continue
 
-            # this_subset = np.delete(deepcopy(subset), index)
             this_subset = np.delete(subset, index)
             vals_in_other_sets = [x & candidate for x in this_subset]
             if vals_in_other_sets:
@@ -116,69 +114,7 @@ for i in range(9):
             # print(candidate_solutions[i, j])
 
 print(candidate_solutions)
-# print(candidate_solutions[:,0])
-# print(candidate_solutions)
 
-# a = [x for x in candidate_solutions[:, 0] if len(x) != 1]
-a = [x for x in candidate_solutions[0, :] if len(x) != 1]
-# print(a)
-
-# for item in a:
-#     in_other_sets = set.union(*[x & item for x in a if x != item])
-#     print(in_other_sets)
-#     # print([x | item for x in a if x != item])
-#     unique = item - set(in_other_sets)
-#     if unique:
-#         print(f"unique val {unique.pop()} in {item}")
-
-
-# for i in range(9):
-#     row_index = (i//3)*3
-#     col_index = (i*9)//3
-#     square = [x for x in candidate_solutions[row_index:row_index+3, col_index:col_index+3].flatten() if len(x) != 1]
-
-#     for index, candidates in enumerate(square):
-#         # print(square)
-#         in_other_sets = set.union(*[x & candidates for x in square if x != candidates])
-#         # print(f"in other sets {in_other_sets}")
-#         unique = candidates - set(in_other_sets)
-#         if unique:
-#             print(f"{candidates}, {unique}")
-#             candidates = unique
-#             square[index] = unique
-
-#         # print(square)
-
-
-# for i in range(9):
-#     row = [x for x in candidate_solutions[i, :] if len(x) != 1]
-
-#     for index, candidates in enumerate(row):
-#         # print(row)
-#         in_other_sets = set.union(*[x & candidates for x in row if x != candidates])
-#         # print(f"in other sets {in_other_sets}")
-#         unique = candidates - set(in_other_sets)
-#         if unique:
-#             print(f"{candidates}, {unique}")
-#             candidates = unique
-#             row[index] = unique
-
-#         # print(row)
-
-# for i in range(9):
-#     column = [x for x in candidate_solutions[:, i] if len(x) != 1]
-
-#     for index, candidates in enumerate(column):
-#         # print(column)
-#         in_other_sets = set.union(*[x & candidates for x in column if x != candidates])
-#         # print(f"in other sets {in_other_sets}")
-#         unique = candidates - set(in_other_sets)
-#         if unique:
-#             print(f"{candidates}, {unique}")
-#             candidates = unique
-#             column[index] = unique
-
-#         # print(column)
 
 subset_names = ["square", "row", "column"]
 target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
@@ -194,7 +130,5 @@ while target_cells:
     if total_iters > 15:
         print("did not reach exit condidion")
         break
-    # candidate_solutions = find_trivial_solutions(candidate_solutions, "row")
-    # candidate_solutions = find_trivial_solutions(candidate_solutions, "column")
 
 print(candidate_solutions)
