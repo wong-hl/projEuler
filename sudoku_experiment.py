@@ -60,11 +60,11 @@ def update_candidate_solutions(candidate_solutions):
                 col_sec = (j // 3)*3
                 row_sec = (i // 3)*3
 
-                row = set().union(
+                row = set.union(
                     *[x for x in candidate_solutions[i, :] if len(x) == 1])
-                col = set().union(
+                col = set.union(
                     *[x for x in candidate_solutions[:, j] if len(x) == 1])
-                sector = set().union(
+                sector = set.union(
                     *[x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1])
 
                 fixed_solutions = row | col | sector
@@ -80,17 +80,20 @@ def update_candidate_solutions(candidate_solutions):
 
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
-    print(
-        f"target set: {preemptive_set}\n mask: {mask}\n candidateset: {candidate_set_subset}\n")
+    # print(
+    #     f"target set: {preemptive_set}\n mask: {mask}\n candidateset: {candidate_set_subset}\n")
 
-    for counter, in_set in enumerate(mask):
-        val = candidate_set_subset[counter]
-        if not in_set and len(val) != 1:
-            candidate_set_subset[counter] = val - (val & preemptive_set)
+    # for counter, in_set in enumerate(mask):
+    #     val = candidate_set_subset[counter]
+    #     if not in_set and len(val) != 1:
+    #         candidate_set_subset[counter] = val - (val & preemptive_set)
 
-    print(candidate_set_subset)
-    print()
-    return candidate_set_subset
+    # # updated_vals = [val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)]
+    # updated_vals = [val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)]
+
+    # print(candidate_set_subset)
+    # print()
+    return np.asarray([val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)])
 
 
 def solve_preemptive_sets(candidate_solutions):
@@ -132,6 +135,15 @@ def solve_preemptive_sets(candidate_solutions):
     candidate_solutions = update_candidate_solutions(candidate_solutions)
 
     return candidate_solutions, num_sets_found
+
+
+def is_completely_solved(candidate_solutions):
+    length_checker = np.vectorize(len)
+    what_lengths = length_checker(candidate_solutions) == 1
+    if what_lengths.sum() == 81:
+        return True
+    else:
+        return False
 
 
 def is_sufficiently_solved(candidate_solutions):
@@ -197,6 +209,8 @@ candidate_solutions = np.empty((9, 9), dtype=set)
 master_set = set(np.arange(1, 10))
 
 for i in range(9):
+    row_val = puzzle[i, :]
+    row_set = set(row_val)
     for j in range(9):
 
         cell_val = puzzle[i, j]
@@ -206,8 +220,7 @@ for i in range(9):
         else:
             col_sec = (j // 3)*3
             row_sec = (i // 3)*3
-            candidate_solutions[i, j] = master_set - (set(puzzle[i, :])
-                                                      | set(puzzle[:, j]) |
+            candidate_solutions[i, j] = master_set - (row_set | set(puzzle[:, j]) |
                                                       set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))
 
 print(candidate_solutions)
@@ -247,7 +260,7 @@ if not solved:
         candidate_solutions, num_sets_found = solve_preemptive_sets(
             candidate_solutions)
 
-        break
+        solved = is_completely_solved(candidate_solutions)
 
         if prev_num_sets_found == num_sets_found:
             print("Guessing required")
@@ -356,7 +369,8 @@ if not solved:
 #         #     i += 1
 
 
-#         print(RenderTree(root))
+#        # print(RenderTree(root))
+    # print(RenderTree(root))
 
 #         # break
 #     # row = candidate_solutions[0, :]
