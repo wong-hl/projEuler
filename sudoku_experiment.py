@@ -73,6 +73,7 @@ def update_candidate_solutions(candidate_solutions):
     return candidate_solutions
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
+    # print(f"Contains preemptive set {candidate_set_subset}")
     for counter, in_set in enumerate(mask):
         if not in_set:
             val = candidate_set_subset[counter]
@@ -82,6 +83,7 @@ def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
     return candidate_set_subset
 
 def solve_preemptive_sets(candidate_solutions):
+    num_sets_found = 0
     for i in range(9):
         for j in range(9):
             col_sec = (j // 3)*3
@@ -92,7 +94,7 @@ def solve_preemptive_sets(candidate_solutions):
 
             if cell_len == 1:
                 continue
-            print(f"For cell ({i} {j}) with value {cell_val}")
+            # print(f"For cell ({i} {j}) with value {cell_val}")
 
             # row = candidate_solutions[i, :]
             # col = candidate_solutions[:, j]
@@ -106,21 +108,25 @@ def solve_preemptive_sets(candidate_solutions):
             # print(sector_mask)
 
             if row_mask.sum() == cell_len:
+                # print(cell_val)
+                # print(candidate_solutions[i, :])
                 candidate_solutions[i, :] = update_subset_preemptive(row_mask, candidate_solutions[i, :], cell_val)
-                print(f"row contains preemptive set {row}")
-            if col_mask.sum() == cell_len:
+                # print(candidate_solutions[i, :])
+                num_sets_found += 1
+            elif col_mask.sum() == cell_len:
                 candidate_solutions[:, j] = update_subset_preemptive(col_mask, candidate_solutions[:, j], cell_val)
-                print(f"col contains preemptive set {col}")
-            if sector_mask.sum() == cell_len:
+                num_sets_found += 1
+
+            elif sector_mask.sum() == cell_len:
                 sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
                 sector_mask = sector_mask.flatten()
-                # print(f"sector contains preemptive set {sector}")
                 candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] = update_subset_preemptive(sector_mask, sector, cell_val).reshape((3,3) )
-                print(f"sector contains preemptive set {sector}")
+                num_sets_found += 1
+
 
     candidate_solutions = update_candidate_solutions(candidate_solutions)
 
-    return candidate_solutions
+    return candidate_solutions, num_sets_found
 
 # Hardest (50)
 puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
@@ -190,46 +196,6 @@ print()
 
 if not solved:
     candidate_solutions = update_candidate_solutions(candidate_solutions)
-    for i in range(9):
-        for j in range(9):
-            col_sec = (j // 3)*3
-            row_sec = (i // 3)*3
-            cell_val = candidate_solutions[i, j]
-            cell_len = len(cell_val)
-            if cell_len == 1:
-                continue
-            print(f"For cell ({i} {j}) with value {cell_val}")
-            # row = candidate_solutions[i, :]
-            # col = candidate_solutions[:, j]
-            # sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
-            # row = [x.issubset(cell_val) for x in candidate_solutions[i, :]]
-            # col = [x.issubset(cell_val) for x in candidate_solutions[:, j]]
-            # sector = [x.issubset(cell_val) for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()]
-            row_mask = candidate_solutions[i, :] <= cell_val
-            col_mask = candidate_solutions[:, j] <= cell_val
-            sector_mask = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] <= cell_val
-            # print(sector_mask)
+    candidate_solutions = solve_preemptive_sets(candidate_solutions)
 
-            if row_mask.sum() == cell_len:
-                row = candidate_solutions[i, :]
-                print(f"row contains preemptive set {row}")
-            if col_mask.sum() == cell_len:
-                col = candidate_solutions[:, j]
-                print(f"col contains preemptive set {col}")
-            if sector_mask.sum() == cell_len:
-                sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
-                print(f"sector contains preemptive set {sector}")
-                sector_mask = sector_mask.flatten()
-                for counter, in_set in enumerate(sector_mask):
-                    if not in_set:
-                        val = sector[counter]
-                        if len(val) != 1 :
-                            sector[counter] = val - (val & cell_val)
-                candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] = sector.reshape((3,3) )
-                print(f"sector contains preemptive set {sector}")
-
-
-            # row = candidate_solutions[i, :]
-            # col = candidate_solutions[:, j]
-            # sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
-            # print(f"row: {row} \ncol: {col} \nsquare:{sector}\n")
+print(candidate_solutions)
