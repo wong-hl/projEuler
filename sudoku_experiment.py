@@ -2,14 +2,14 @@ import numpy as np
 
 
 def find_trivial_solutions(candidate_solutions, which_subset):
+
     num_solns = 0
-    # print("\n")
-    # print(f"Solving for {which_subset} subset")
+
     for i in range(9):
         if which_subset == "square":
             row_index = (i//3)*3
             col_index = (i % 3)*3
-            # print(f"row = {row_index} col = {col_index}")
+
             subset = candidate_solutions[row_index:row_index +
                                          3, col_index:col_index+3].flatten()
         elif which_subset == "row":
@@ -17,10 +17,11 @@ def find_trivial_solutions(candidate_solutions, which_subset):
         elif which_subset == "column":
             subset = candidate_solutions[:, i]
 
-        # print(subset)
 
         for index, _ in enumerate(subset):
+
             candidate = subset[index]
+
             if len(candidate) == 1:
                 continue
 
@@ -28,16 +29,10 @@ def find_trivial_solutions(candidate_solutions, which_subset):
             vals_in_other_sets = [x & candidate for x in this_subset]
             if vals_in_other_sets:
                 in_other_sets = set.union(*vals_in_other_sets)
-                # print(f"in other sets {in_other_sets}")
                 unique = candidate - set(in_other_sets)
+
                 if unique:
-                    # print(f"{in_other_sets} {candidate}, {unique}")
-                    # unique_val = min(unique)
-                    # subset = [
-                    #     adj_set - unique if unique_val in adj_set else adj_set for adj_set in subset]
                     subset[index] = unique
-                    # print(subset)
-                    # print()
                     num_solns += 1
 
         if which_subset == "square":
@@ -55,27 +50,26 @@ def find_trivial_solutions(candidate_solutions, which_subset):
 def update_candidate_solutions(candidate_solutions):
     for i in range(9):
         for j in range(9):
+
             cell_val = candidate_solutions[i, j]
-            # print(f"i = {i} j= {j} val = {cell_val}")
-            # print(cell_val)
+
             if len(cell_val) != 1:
-                # print(cell_val)
                 col_sec = (j // 3)*3
                 row_sec = (i // 3)*3
+
                 row = set().union(*[x for x in candidate_solutions[i, :] if len(x)==1])
                 col = set().union(*[x for x in candidate_solutions[:, j] if len(x)==1])
                 sector = set().union(*[x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1])
+
                 fixed_solutions = row | col | sector
-                # print(f"row: {row} col: {col} sec: {sector} fixed = {fixed_solutions}")
-                # print(f"intersection: {cell_val & fixed_solutions}")
-                # print()
+
                 if cell_val & fixed_solutions: 
                     candidate_solutions[i, j] = cell_val - fixed_solutions
 
     return candidate_solutions
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
-    # print(f"Contains preemptive set {candidate_set_subset}")
+
     for counter, in_set in enumerate(mask):
         if not in_set:
             val = candidate_set_subset[counter]
@@ -96,25 +90,15 @@ def solve_preemptive_sets(candidate_solutions):
 
             if cell_len == 1:
                 continue
-            # print(f"For cell ({i} {j}) with value {cell_val}")
 
-            # row = candidate_solutions[i, :]
-            # col = candidate_solutions[:, j]
-            # sector = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
-            # row = [x.issubset(cell_val) for x in candidate_solutions[i, :]]
-            # col = [x.issubset(cell_val) for x in candidate_solutions[:, j]]
-            # sector = [x.issubset(cell_val) for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()]
             row_mask = candidate_solutions[i, :] <= cell_val
             col_mask = candidate_solutions[:, j] <= cell_val
             sector_mask = candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] <= cell_val
-            # print(sector_mask)
 
             if row_mask.sum() == cell_len:
-                # print(cell_val)
-                # print(candidate_solutions[i, :])
                 candidate_solutions[i, :] = update_subset_preemptive(row_mask, candidate_solutions[i, :], cell_val)
-                # print(candidate_solutions[i, :])
                 num_sets_found += 1
+
             elif col_mask.sum() == cell_len:
                 candidate_solutions[:, j] = update_subset_preemptive(col_mask, candidate_solutions[:, j], cell_val)
                 num_sets_found += 1
@@ -166,19 +150,17 @@ master_set = set(np.arange(1, 10))
 
 for i in range(9):
     for j in range(9):
+
         cell_val = puzzle[i, j]
-        # print(f"i = {i} j= {j} val = {cell_val}")
-        # print(cell_val)
+
         if cell_val != 0:
             candidate_solutions[i, j] = {cell_val}
-            # print(candidate_solutions[i, j])
         else:
             col_sec = (j // 3)*3
             row_sec = (i // 3)*3
             candidate_solutions[i, j] = master_set - (set(puzzle[i, :])
                                                       | set(puzzle[:, j]) |
                                                       set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))
-            # print(candidate_solutions[i, j])
 
 print(candidate_solutions)
 
