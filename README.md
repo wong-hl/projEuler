@@ -21,7 +21,7 @@ In the table belows, the problems have been listed in order of completion and no
 |       76       |     Counting Summations     |  Yes   |           Maybe?           | Utilised Euler's Pentagonal Theorem to obtain the partition recurrence relation. Cached prior solutions to solve solution in approx. 500ms.|
 |78|Coin Partitions|  Yes   | No | Used formulation from 76. But, 1) used a vector to store previous values, and 2) only the significant decimal digits required in the modulo are stored. If the full number is stored, there will be overflow and exceed capacity of an i32.|
 |77|Prime Summations|Yes|No|Used Euler transformation for integer sequences with an intermediate series to obtain solution|
-|96|Su Doku|WIP| | |
+|96|Su Doku|Yes|No|Used three levels of solvers. 1) Finding trivial solutions (suitable for easy puzzles) & might help for intermediate. 2) Used pre-emptive sets to reduce possible number candidate solutions. 3) Guessing if a complete solution is not obatained from pre-emptive step. N.B. Pending re-implementation in Rust (Planning to implement tree data structure (in addition to solver) to test understanding)|
 
 In accordance to the rules of sharing solutions outside Project Euler - solutions to problems outside the first 100 should not be made outside the Project Euler discussion forum - the code for solving those problems are in a private repo. The table below details which those problems were solved and that exists within a private repo. 
 
