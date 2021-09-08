@@ -326,6 +326,10 @@ def get_associated_vals(solution, x, y):
 
     return row | col | sector
 
+def puzzle_three_digit_num(solution_vals):
+    multiplier = [100, 10, 1]
+    return sum([val.pop()*mult for val, mult in zip(solution_vals, multiplier)])
+
 
 
 # class Node:
@@ -652,7 +656,7 @@ for puzzle in store_puzzles.values():
     if solved:
         # print(candidate_solutions)
         check_solution(candidate_solutions)
-        puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
+        puzzle_sum = puzzle_three_digit_num(candidate_solutions[0, 0:3])
         print(puzzle_sum)
         total_sum += puzzle_sum
 
