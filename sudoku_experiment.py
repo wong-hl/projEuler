@@ -1,4 +1,3 @@
-from typing_extensions import ParamSpec
 import numpy as np
 from copy import deepcopy
 from anytree import AnyNode, Node, RenderTree
@@ -172,6 +171,26 @@ def first_guess(candidate_solutions):
             if len(candidate_solutions[i, j]) != 1:
                 return candidate_solutions[i, j], i, j
 
+def find_candidate_solutions(puzzle):
+    candidate_solutions = np.empty((9, 9), dtype=set)
+
+    for i in range(9):
+        row_val = puzzle[i, :]
+        row_set = set(row_val)
+        for j in range(9):
+
+            cell_val = puzzle[i, j]
+
+            if cell_val != 0:
+                candidate_solutions[i, j] = {cell_val}
+            else:
+                col_sec = (j // 3)*3
+                row_sec = (i // 3)*3
+                candidate_solutions[i, j] = master_set - (row_set | set(puzzle[:, j]) |
+                                                        set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))                
+
+    return candidate_solutions
+
 # class Node:
 #     def __init__(self, value):
 #         self.value = value
@@ -245,26 +264,14 @@ for line in data:
 master_set = set(np.arange(1, 10))
 total_sum = 0
 
+store_puzzles_2 = dict()
+store_puzzles_2[5] = store_puzzles[5]
+
 for puzzle in store_puzzles.values():
+# for puzzle in store_puzzles_2.values():
 
-    candidate_solutions = np.empty((9, 9), dtype=set)
-    # print(len(candidate_solutions))
+    candidate_solutions = find_candidate_solutions(puzzle)
 
-
-    for i in range(9):
-        row_val = puzzle[i, :]
-        row_set = set(row_val)
-        for j in range(9):
-
-            cell_val = puzzle[i, j]
-
-            if cell_val != 0:
-                candidate_solutions[i, j] = {cell_val}
-            else:
-                col_sec = (j // 3)*3
-                row_sec = (i // 3)*3
-                candidate_solutions[i, j] = master_set - (row_set | set(puzzle[:, j]) |
-                                                        set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))
 
     # print(candidate_solutions)
 
@@ -348,7 +355,8 @@ for puzzle in store_puzzles.values():
         guess_depth = 0
         name = str(guess_depth)
         # guesses = Node(str(guess_depth), guess_val = None)
-        prev_node = AnyNode(id = str(guess_depth), guess_val = None)
+        # prev_node = AnyNode(id = str(guess_depth), guess_val = None)
+        prev_node = AnyNode(guess_val = None, soln = candidate_solutions)
         root = prev_node
         prev_name = name
 
@@ -361,7 +369,7 @@ for puzzle in store_puzzles.values():
 
             cell_val = candidate_solutions[i, j]
             cell_len = len(cell_val)
-            print(f"{i} {j} {cell_val}")
+            # print(f"{i} {j} {cell_val}")
 
             if cell_len == 1:
                 j += 1
@@ -378,37 +386,69 @@ for puzzle in store_puzzles.values():
                 try:
                     temp = update_candidate_solutions(guess)
                 except Exception:
-                    name = f"{guess_depth + 1}_{index}"
-                    this_node = AnyNode(id=name,
+                    # name = f"{guess_depth + 1}_{index}"
+                    # this_node = AnyNode(id=name,
+                    this_node = AnyNode(
                             parent=prev_node, guess_val=val, is_valid = False, index = (i,j))
                     continue
                 else:
                     candidate_solutions = temp
                     else_reached = True
-                    name = f"{guess_depth + 1}_{index}"
-                    this_node = AnyNode(id=name,
+                    # name = f"{guess_depth + 1}_{index}"
+                    # this_node = AnyNode(id=name,
+                    this_node = AnyNode(
                             parent=prev_node, guess_val=val, is_valid = True, index = (i,j), soln = temp)
+                    # print(this_node)
                     # prev_name = name
                     # prev_node = this_node
                     # print(candidate_solutions)
                     # break
 
-            print(prev_node)
+            # print(prev_node)
+
+
+            exit_counter = 0
 
             found_valid = False
-            for child in list(prev_node.children):
-                print(child.is_valid)
-                if child.is_valid:
-                    guess_depth += 1
-                    prev_name = child.id
-                    prev_node = child
-                    i = child.index[0]
-                    j = child.index[1]
-                    candidate_solutions = child.soln
-                    found_valid = True
-                    # candidate_solutions = update_candidate_solutions(child.soln)
+            while not found_valid:
+                # print(list(prev_node.children))
+                for child in list(prev_node.children):
+                    # print(child.is_valid)
+                    if child.is_valid:
+                        guess_depth += 1
+                        # prev_name = child.id
+                        prev_node = child
+                        i = child.index[0]
+                        j = child.index[1]
+                        candidate_solutions = child.soln
+                        # print(candidate_solutions)
+                        found_valid = True
+                        # print(child)
+                        break
+                        # candidate_solutions = update_candidate_solutions(child.soln)
+
+                if not found_valid:
+                    prev_node.is_valid = False
+                    prev_node.soln = None
+                    prev_node = prev_node.parent
+                    # print(prev_node)
+                    guess_depth -= 1
+
+                    if prev_node is None:
+                        break
+
+                exit_counter += 1
+
+                if exit_counter > 5:
+                    break
+
+
+            # print(RenderTree(root))
 
             if not found_valid:
+                # print(this_node)
+                print(RenderTree(root))
+                # print(candidate_solutions)
                 print("Invalid solution")
                 break
 
@@ -445,7 +485,7 @@ for puzzle in store_puzzles.values():
         #             break
 
 
-    print(candidate_solutions)
+    # print(candidate_solutions)
 
     if solved:
         puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
