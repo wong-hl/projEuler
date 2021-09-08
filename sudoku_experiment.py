@@ -60,12 +60,24 @@ def update_candidate_solutions(candidate_solutions):
                 col_sec = (j // 3)*3
                 row_sec = (i // 3)*3
 
-                row = set.union(
-                    *[x for x in candidate_solutions[i, :] if len(x) == 1])
-                col = set.union(
-                    *[x for x in candidate_solutions[:, j] if len(x) == 1])
-                sector = set.union(
-                    *[x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1])
+                row_vals = [x for x in candidate_solutions[i, :] if len(x) == 1]
+                col_vals = [x for x in candidate_solutions[:, j] if len(x) == 1]
+                sector_vals = [x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1]
+
+                if row_vals:
+                    row = set.union(*row_vals)
+                else:
+                    row = set()
+
+                if col_vals:
+                    col = set.union(*col_vals)
+                else:
+                    col = set()
+
+                if sector_vals:
+                    sector = set.union(*sector_vals)
+                else:
+                    sector = set()
 
                 fixed_solutions = row | col | sector
 
@@ -181,16 +193,43 @@ def first_guess(candidate_solutions):
 #         assert isinstance(node, GuessingTree)
 #         self.children.append(node)
 
-# Hardest (50)
-puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 1, 0, 7, 0, 0, 0],
-                     [7, 0, 6, 0, 3, 0, 5, 0, 0],
-                     [0, 7, 0, 0, 0, 9, 0, 8, 0],
-                     [9, 0, 0, 0, 2, 0, 0, 0, 4],
-                     [0, 1, 0, 8, 0, 0, 0, 5, 0],
-                     [0, 0, 9, 0, 4, 0, 3, 0, 1],
-                     [0, 0, 0, 7, 0, 2, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 8, 0, 0, 6]])
+import os 
+
+input_file = os.path.join(".", "problem_96", "p096_sudoku.txt")
+
+with open(input_file, "r") as f:
+    data = f.readlines()
+
+store_puzzles = dict()
+puzzle_counter = 0
+row_counter = 0
+
+
+for line in data:
+    if "Grid" in line:
+        store_puzzles[puzzle_counter] = np.zeros((9,9), dtype=int)
+        puzzle_counter += 1
+        row_counter = 0
+    elif "End" in line:
+        break
+    else:
+        store_puzzles.get(puzzle_counter-1)[row_counter, :] = np.asarray([int(x) for x in list(line.strip())])
+        row_counter += 1
+
+# puzzle = store_puzzles.get(1)
+# print(puzzle)
+
+
+# # Hardest (50)
+# puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
+#                      [0, 0, 0, 1, 0, 7, 0, 0, 0],
+#                      [7, 0, 6, 0, 3, 0, 5, 0, 0],
+#                      [0, 7, 0, 0, 0, 9, 0, 8, 0],
+#                      [9, 0, 0, 0, 2, 0, 0, 0, 4],
+#                      [0, 1, 0, 8, 0, 0, 0, 5, 0],
+#                      [0, 0, 9, 0, 4, 0, 3, 0, 1],
+#                      [0, 0, 0, 7, 0, 2, 0, 0, 0],
+#                      [0, 0, 0, 0, 0, 8, 0, 0, 6]])
 
 # Easiest (1)
 # puzzle = np.asarray([[0, 0, 3, 0, 2, 0, 6, 0, 0],
@@ -203,72 +242,84 @@ puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
 #                      [8, 0, 0, 2, 0, 3, 0, 0, 9],
 #                      [0, 0, 5, 0, 1, 0, 3, 0, 0]])
 
-candidate_solutions = np.empty((9, 9), dtype=set)
-# print(len(candidate_solutions))
-
 master_set = set(np.arange(1, 10))
+total_sum = 0
 
-for i in range(9):
-    row_val = puzzle[i, :]
-    row_set = set(row_val)
-    for j in range(9):
+for puzzle in store_puzzles.values():
 
-        cell_val = puzzle[i, j]
-
-        if cell_val != 0:
-            candidate_solutions[i, j] = {cell_val}
-        else:
-            col_sec = (j // 3)*3
-            row_sec = (i // 3)*3
-            candidate_solutions[i, j] = master_set - (row_set | set(puzzle[:, j]) |
-                                                      set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))
-
-print(candidate_solutions)
+    candidate_solutions = np.empty((9, 9), dtype=set)
+    # print(len(candidate_solutions))
 
 
-subset_names = ["square", "row", "column"]
-total_no_soln = 0
-total_iters = 0
+    for i in range(9):
+        row_val = puzzle[i, :]
+        row_set = set(row_val)
+        for j in range(9):
 
-solved = is_sufficiently_solved(candidate_solutions)
+            cell_val = puzzle[i, j]
 
-while not solved:
-    counter = total_iters % 3
-    candidate_solutions, num_sol_found = find_trivial_solutions(
-        candidate_solutions, subset_names[counter])
-    solved = is_sufficiently_solved(candidate_solutions)
+            if cell_val != 0:
+                candidate_solutions[i, j] = {cell_val}
+            else:
+                col_sec = (j // 3)*3
+                row_sec = (i // 3)*3
+                candidate_solutions[i, j] = master_set - (row_set | set(puzzle[:, j]) |
+                                                        set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))
 
-    if num_sol_found == 0:
-        total_no_soln += 1
-        print(total_iters)
+    # print(candidate_solutions)
 
-    if total_no_soln > 2:
-        print("No trivial solution found")
-        break
 
-if solved:
-    print("\nSolved using trivial method")
-    print(candidate_solutions)
+    subset_names = ["square", "row", "column"]
+    total_no_soln = 0
+    total_iters = 0
 
-if not solved:
-    print()
-    candidate_solutions = update_candidate_solutions(candidate_solutions)
-    solved = is_sufficiently_solved(candidate_solutions)
-    prev_num_sets_found = 1
+    solved = is_completely_solved(candidate_solutions)
 
     while not solved:
-        candidate_solutions, num_sets_found = solve_preemptive_sets(
-            candidate_solutions)
-
+        counter = total_iters % 3
+        candidate_solutions, num_sol_found = find_trivial_solutions(
+            candidate_solutions, subset_names[counter])
         solved = is_completely_solved(candidate_solutions)
 
-        if prev_num_sets_found == num_sets_found:
-            print("Guessing required")
+        if num_sol_found == 0:
+            total_no_soln += 1
+            # print(total_iters)
+
+        if total_no_soln > 2:
+            # print("No trivial solution found")
             break
 
-        prev_num_sets_found = num_sets_found
+    # if solved:
+    #     print("\nSolved using trivial method")
+    #     print(candidate_solutions)
 
-    print(candidate_solutions)
+    if not solved:
+        candidate_solutions = update_candidate_solutions(candidate_solutions)
+        solved = is_completely_solved(candidate_solutions)
+        prev_num_sets_found = 1
+
+        while not solved:
+            candidate_solutions, num_sets_found = solve_preemptive_sets(
+                candidate_solutions)
+
+            solved = is_completely_solved(candidate_solutions)
+
+            if prev_num_sets_found == num_sets_found:
+                print("Guessing required")
+                print(candidate_solutions)
+                break
+                # raise Exception("guessing required")
+
+            prev_num_sets_found = num_sets_found
+
+
+    # if solved:
+    #     puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
+    #     print(puzzle_sum)
+    #     total_sum += puzzle_sum
+
+# print(f"Total sum: {total_sum}")
+
 
 # if not solved:
 #     row = candidate_solutions[0, :]
@@ -293,104 +344,112 @@ if not solved:
 
 #     print("guess")
 
-# if not solved:
-#     guess_depth = 0
-#     name = str(guess_depth)
-#     # guesses = Node(str(guess_depth), guess_val = None)
-#     prev_node = AnyNode(id = str(guess_depth), guess_val = None)
-#     root = prev_node
-#     prev_name = name
+    if not solved:
+        guess_depth = 0
+        name = str(guess_depth)
+        # guesses = Node(str(guess_depth), guess_val = None)
+        prev_node = AnyNode(id = str(guess_depth), guess_val = None)
+        root = prev_node
+        prev_name = name
 
-#     i = 0
-#     j = 0
+        i = 0
+        j = 0
 
-#     while i < 9 and j < 9:
-#         # for j in range(9):
-#         else_reached = False
+        while i < 9 and j < 9:
+            # for j in range(9):
+            else_reached = False
 
-#         cell_val = candidate_solutions[i, j]
-#         cell_len = len(cell_val)
-#         print(f"{i} {j} {cell_val}")
+            cell_val = candidate_solutions[i, j]
+            cell_len = len(cell_val)
+            print(f"{i} {j} {cell_val}")
 
-#         if cell_len == 1:
-#             j += 1
-#             if j == 9:
-#                 i += 1
-#                 j = 0
-#             continue
+            if cell_len == 1:
+                j += 1
+                if j == 9:
+                    i += 1
+                    j = 0
+                continue
 
-#         cell_val = list(cell_val)
+            cell_val = list(cell_val)
 
-#         for index, val in enumerate(cell_val):
-#             guess = deepcopy(candidate_solutions)
-#             guess[i, j] = {val}
-#             try:
-#                 temp = update_candidate_solutions(guess)
-#             except Exception:
-#                 name = f"{guess_depth + 1}_{index}"
-#                 this_node = AnyNode(id=name,
-#                         parent=prev_node, guess_val=val, is_valid = False, index = (i,j))
-#                 continue
-#             else:
-#                 candidate_solutions = temp
-#                 else_reached = True
-#                 name = f"{guess_depth + 1}_{index}"
-#                 this_node = AnyNode(id=name,
-#                         parent=prev_node, guess_val=val, is_valid = True, index = (i,j), soln = temp)
-#                 # prev_name = name
-#                 # prev_node = this_node
-#                 # print(candidate_solutions)
-#                 # break
+            for index, val in enumerate(cell_val):
+                guess = deepcopy(candidate_solutions)
+                guess[i, j] = {val}
+                try:
+                    temp = update_candidate_solutions(guess)
+                except Exception:
+                    name = f"{guess_depth + 1}_{index}"
+                    this_node = AnyNode(id=name,
+                            parent=prev_node, guess_val=val, is_valid = False, index = (i,j))
+                    continue
+                else:
+                    candidate_solutions = temp
+                    else_reached = True
+                    name = f"{guess_depth + 1}_{index}"
+                    this_node = AnyNode(id=name,
+                            parent=prev_node, guess_val=val, is_valid = True, index = (i,j), soln = temp)
+                    # prev_name = name
+                    # prev_node = this_node
+                    # print(candidate_solutions)
+                    # break
 
-#         print(prev_node)
+            print(prev_node)
 
-#         found_valid = False
-#         for child in list(prev_node.children):
-#             print(child.is_valid)
-#             if child.is_valid:
-#                 guess_depth += 1
-#                 prev_name = child.id
-#                 prev_node = child
-#                 i = child.index[0]
-#                 j = child.index[1]
-#                 candidate_solutions = child.soln
-#                 found_valid = True
+            found_valid = False
+            for child in list(prev_node.children):
+                print(child.is_valid)
+                if child.is_valid:
+                    guess_depth += 1
+                    prev_name = child.id
+                    prev_node = child
+                    i = child.index[0]
+                    j = child.index[1]
+                    candidate_solutions = child.soln
+                    found_valid = True
+                    # candidate_solutions = update_candidate_solutions(child.soln)
 
-#         if not found_valid:
-#             print("Invalid solution")
-#             break
+            if not found_valid:
+                print("Invalid solution")
+                break
 
-#         # guess_depth += 1
-#         # prev_name = name
-#         # prev_node = this_node
-#         # j += 1
-#         # if j == 9:
-#         #     j = 0
-#         #     i += 1
-
-
-#        # print(RenderTree(root))
-    # print(RenderTree(root))
-
-#         # break
-#     # row = candidate_solutions[0, :]
-#     # block = candidate_solutions[0:3, 0:3]
-#     # for i in range(3):
-#     #     target_cell = candidate_solutions[0, i]
-#     #     if len(target_cell) != 1:
-#     #         col = candidate_solutions[i, :]
-#     #         target_cell = list(target_cell)
-#     #         for val in target_cell:
-#     #             print(val)
-#     #             candidate_solutions[0,i] = {val}
-#     #             try:
-#     #                 temp = update_candidate_solutions(candidate_solutions)
-#     #                 print(temp)
-#     #             except Exception:
-#     #                 continue
-
-#     #             candidate_solutions = temp
-#     #             break
+            # guess_depth += 1
+            # prev_name = name
+            # prev_node = this_node
+            # j += 1
+            # if j == 9:
+            #     j = 0
+            #     i += 1
 
 
-# print(candidate_solutions)
+        # print(RenderTree(root))
+        # print(RenderTree(root))
+
+            # break
+        # row = candidate_solutions[0, :]
+        # block = candidate_solutions[0:3, 0:3]
+        # for i in range(3):
+        #     target_cell = candidate_solutions[0, i]
+        #     if len(target_cell) != 1:
+        #         col = candidate_solutions[i, :]
+        #         target_cell = list(target_cell)
+        #         for val in target_cell:
+        #             print(val)
+        #             candidate_solutions[0,i] = {val}
+        #             try:
+        #                 temp = update_candidate_solutions(candidate_solutions)
+        #                 print(temp)
+        #             except Exception:
+        #                 continue
+
+        #             candidate_solutions = temp
+        #             break
+
+
+    print(candidate_solutions)
+
+    if solved:
+        puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
+        print(puzzle_sum)
+        total_sum += puzzle_sum
+
+print(f"Total sum: {total_sum}")
