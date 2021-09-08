@@ -59,41 +59,6 @@ def update_candidate_solutions(solutions):
             cell_val = solutions[i, j]
 
             if len(cell_val) != 1:
-                # col_sec = (j // 3) * 3
-                # row_sec = (i // 3) * 3
-
-                # row_vals = [x for x in solutions[i, :] if len(x) == 1]
-                # col_vals = [x for x in solutions[:, j] if len(x) == 1]
-                # sector_vals = [x for x in solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten()  if len(x) == 1]
-                # row_vals = [x for x in np.delete(solutions[i, :], j) if len(x) == 1]
-                # col_vals = [x for x in np.delete(solutions[:, j], i) if len(x) == 1]
-                # sector_vals = [
-                #     x
-                #     for x in np.delete(
-                #         solutions[
-                #             row_sec : row_sec + 3, col_sec : col_sec + 3
-                #         ].flatten(),
-                #         (i - row_sec) * 3 + (j - col_sec),
-                #     )
-                #     if len(x) == 1
-                # ]
-
-                # if row_vals:
-                #     row = set.union(*row_vals)
-                # else:
-                #     row = set()
-
-                # if col_vals:
-                #     col = set.union(*col_vals)
-                # else:
-                #     col = set()
-
-                # if sector_vals:
-                #     sector = set.union(*sector_vals)
-                # else:
-                #     sector = set()
-
-                # fixed_solutions = row | col | sector
 
                 fixed_solutions = get_associated_vals(solutions, i, j)
 
@@ -108,29 +73,12 @@ def update_candidate_solutions(solutions):
 
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
-    # print(
-    #     f"target set: {preemptive_set}\n mask: {mask}\n candidateset: {candidate_set_subset}\n")
-
-    # for counter, in_set in enumerate(mask):
-    #     val = candidate_set_subset[counter]
-    #     if not in_set and len(val) != 1:
-    #         candidate_set_subset[counter] = val - (val & preemptive_set)
-
-    # # updated_vals = [val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)]
-    # updated_vals = [val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)]
-
-    # print(candidate_set_subset)
-    # print()
     return np.asarray(
         [
             val - (val & preemptive_set) if len(val) != 1 and not in_set else val
             for val, in_set in zip(candidate_set_subset, mask)
         ]
     )
-
-
-# def update_associated_values(index_row, index_col, candidate_solutions):
-#     return candidate_solutions
 
 
 def solve_preemptive_sets(solutions):
@@ -267,8 +215,6 @@ def check_solution(solution):
 
             fixed_solutions = row_set | col_set | sector_set
 
-            # print(solution)
-
             if cell_val & fixed_solutions:
                 print(f"i = {i}, j = {j} has val {cell_val}")
                 print(f"row set: {row_set}")
@@ -312,46 +258,12 @@ def get_associated_vals(solution, x, y):
     else:
         sector = set()
 
-    # sector_val = solution[
-    #     row_sec : row_sec + 3, col_sec : col_sec + 3
-    # ].flatten()
-
-    # row_set = set.union(*[x for x in np.delete(row_val, y) if len(x) != 1])
-    # col_set = set.union(*(np.delete(solution[:, y], x) if len(x) != 1))
-    # sector_set = set.union(
-    #     *(np.delete(sector_val, (x - row_sec) * 3 + (y - col_sec)) if len(x) != 1)
-    # )
-
-    # return row_set | col_set | sector_set
-
     return row | col | sector
 
 def puzzle_three_digit_num(solution_vals):
     multiplier = [100, 10, 1]
     return sum([val.pop()*mult for val, mult in zip(solution_vals, multiplier)])
 
-
-
-# class Node:
-#     def __init__(self, value):
-#         self.value = value
-
-
-# class GuessingTree:
-#     def __init__(self):
-#         self.index = index
-#         self.is_violation = is_violation
-#         self.children = []
-#         if children is not None:
-#             for child in children:
-#                 self.add_child(child)
-
-#     def __repr__(self):
-#         return f"Name: {self.name}, Index: {self.index}"
-
-#     def add_child(self, node):
-#         assert isinstance(node, GuessingTree)
-#         self.children.append(node)
 
 import os
 
@@ -378,34 +290,10 @@ for line in data:
         )
         row_counter += 1
 
-# puzzle = store_puzzles.get(1)
-# print(puzzle)
-
-
-# # Hardest (50)
-# puzzle = np.asarray([[3, 0, 0, 2, 0, 0, 0, 0, 0],
-#                      [0, 0, 0, 1, 0, 7, 0, 0, 0],
-#                      [7, 0, 6, 0, 3, 0, 5, 0, 0],
-#                      [0, 7, 0, 0, 0, 9, 0, 8, 0],
-#                      [9, 0, 0, 0, 2, 0, 0, 0, 4],
-#                      [0, 1, 0, 8, 0, 0, 0, 5, 0],
-#                      [0, 0, 9, 0, 4, 0, 3, 0, 1],
-#                      [0, 0, 0, 7, 0, 2, 0, 0, 0],
-#                      [0, 0, 0, 0, 0, 8, 0, 0, 6]])
-
-# Easiest (1)
-# puzzle = np.asarray([[0, 0, 3, 0, 2, 0, 6, 0, 0],
-#                      [9, 0, 0, 3, 0, 5, 0, 0, 1],
-#                      [0, 0, 1, 8, 0, 6, 4, 0, 0],
-#                      [0, 0, 8, 1, 0, 2, 9, 0, 0],
-#                      [7, 0, 0, 0, 0, 0, 0, 0, 8],
-#                      [0, 0, 6, 7, 0, 8, 2, 0, 0],
-#                      [0, 0, 2, 6, 0, 9, 5, 0, 0],
-#                      [8, 0, 0, 2, 0, 3, 0, 0, 9],
-#                      [0, 0, 5, 0, 1, 0, 3, 0, 0]])
 
 master_set = set(np.arange(1, 10))
 total_sum = 0
+subset_names = ["square", "row", "column"]
 
 store_puzzles_2 = dict()
 store_puzzles_2[6] = store_puzzles.get(6)
@@ -415,9 +303,6 @@ for puzzle in store_puzzles.values():
 
     candidate_solutions = find_candidate_solutions(puzzle, master_set)
 
-    # print(candidate_solutions)
-
-    subset_names = ["square", "row", "column"]
     total_no_soln = 0
     total_iters = 0
 
@@ -438,10 +323,6 @@ for puzzle in store_puzzles.values():
             # print("No trivial solution found")
             break
 
-    # if solved:
-    #     print("\nSolved using trivial method")
-    #     print(candidate_solutions)
-
     if not solved:
         candidate_solutions = update_candidate_solutions(candidate_solutions)
         solved = is_completely_solved(candidate_solutions)
@@ -454,50 +335,17 @@ for puzzle in store_puzzles.values():
 
             solved = is_completely_solved(candidate_solutions)
 
-            # print(num_sets_found)
-
             if prev_num_sets_found == num_sets_found:
                 print("Guessing required")
                 print(candidate_solutions)
                 break
-                # raise Exception("guessing required")
 
             prev_num_sets_found = num_sets_found
 
-    # if solved:
-    #     puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
-    #     print(puzzle_sum)
-    #     total_sum += puzzle_sum
-
-    # print(f"Total sum: {total_sum}")
-
-    # if not solved:
-    #     row = candidate_solutions[0, :]
-    #     block = candidate_solutions[0:3, 0:3]
-    #     for i in range(3):
-    #         target_cell = candidate_solutions[0, i]
-    #         if len(target_cell) != 1:
-    #             col = candidate_solutions[i, :]
-    #             target_cell = list(target_cell)
-    #             for val in target_cell:
-    #                 print(val)
-    #                 candidate_solutions[0,i] = {val}
-    #                 try:
-    #                     temp = update_candidate_solutions(candidate_solutions)
-    #                     print(temp)
-    #                 except Exception:
-    #                     continue
-
-    #                 candidate_solutions = temp
-    #                 break
-
-    #     print("guess")
 
     if not solved:
         guess_depth = 0
         name = str(guess_depth)
-        # guesses = Node(str(guess_depth), guess_val = None)
-        # prev_node = AnyNode(id = str(guess_depth), guess_val = None)
         prev_node = AnyNode(guess_val=None, soln=candidate_solutions)
         root = prev_node
         prev_name = name
@@ -506,12 +354,10 @@ for puzzle in store_puzzles.values():
         j = 0
 
         while i < 9 and j < 9 and not solved:
-            # for j in range(9):
             else_reached = False
 
             cell_val = candidate_solutions[i, j]
             cell_len = len(cell_val)
-            # print(f"{i} {j} {cell_val}")
 
             if cell_len == 1:
                 j += 1
@@ -528,7 +374,6 @@ for puzzle in store_puzzles.values():
                 guess = deepcopy(curr_solution)
 
                 fixed_vals = get_associated_vals(guess, i, j)
-                # print(fixed_vals)
 
                 if fixed_vals & {val}:
                     this_node = AnyNode(
@@ -541,8 +386,6 @@ for puzzle in store_puzzles.values():
                 try:
                     temp = update_candidate_solutions(guess)
                 except Exception:
-                    # name = f"{guess_depth + 1}_{index}"
-                    # this_node = AnyNode(id=name,
                     this_node = AnyNode(
                         parent=prev_node, guess_val=val, is_valid=False, index=(i, j)
                     )
@@ -550,8 +393,6 @@ for puzzle in store_puzzles.values():
                 else:
                     candidate_solutions = temp
                     else_reached = True
-                    # name = f"{guess_depth + 1}_{index}"
-                    # this_node = AnyNode(id=name,
                     this_node = AnyNode(
                         parent=prev_node,
                         guess_val=val,
@@ -564,40 +405,25 @@ for puzzle in store_puzzles.values():
                         candidate_solutions = temp
                         found_valid = True
                         break
-                    # print(this_node)
-                    # prev_name = name
-                    # prev_node = this_node
-                    # print(candidate_solutions)
-                    # break
-
-            # print(prev_node)
 
             exit_counter = 0
 
             found_valid = False
             while not found_valid:
-                # print(list(prev_node.children))
                 for child in list(prev_node.children):
-                    # print(child.is_valid)
                     if child.is_valid:
                         guess_depth += 1
-                        # prev_name = child.id
                         prev_node = child
                         i = child.index[0]
                         j = child.index[1]
                         candidate_solutions = child.soln
-                        # print(candidate_solutions)
                         found_valid = True
-                        # print(child)
                         break
-                        # candidate_solutions = update_candidate_solutions(child.soln)
 
                 if not found_valid:
                     prev_node.is_valid = False
                     prev_node.soln = None
                     prev_node = prev_node.parent
-                    # print(RenderTree(root))
-                    # print(prev_node)
                     guess_depth -= 1
 
                     if prev_node is None:
@@ -607,54 +433,14 @@ for puzzle in store_puzzles.values():
 
                 solved = is_completely_solved(candidate_solutions)
 
-                # if exit_counter > 5:
-                #     break
-
-            # print(RenderTree(root))
 
             if not found_valid:
-                # print(this_node)
                 print(RenderTree(root))
-                # print(candidate_solutions)
                 print("Invalid solution")
                 break
 
-            # guess_depth += 1
-            # prev_name = name
-            # prev_node = this_node
-            # j += 1
-            # if j == 9:
-            #     j = 0
-            #     i += 1
-
-        # print(RenderTree(root))
-        # print(RenderTree(root))
-
-        # break
-        # row = candidate_solutions[0, :]
-        # block = candidate_solutions[0:3, 0:3]
-        # for i in range(3):
-        #     target_cell = candidate_solutions[0, i]
-        #     if len(target_cell) != 1:
-        #         col = candidate_solutions[i, :]
-        #         target_cell = list(target_cell)
-        #         for val in target_cell:
-        #             print(val)
-        #             candidate_solutions[0,i] = {val}
-        #             try:
-        #                 temp = update_candidate_solutions(candidate_solutions)
-        #                 print(temp)
-        #             except Exception:
-        #                 continue
-
-        #             candidate_solutions = temp
-        #             break
-
-    # print(candidate_solutions)
-    # print(exit_counter)
 
     if solved:
-        # print(candidate_solutions)
         check_solution(candidate_solutions)
         puzzle_sum = puzzle_three_digit_num(candidate_solutions[0, 0:3])
         print(puzzle_sum)
