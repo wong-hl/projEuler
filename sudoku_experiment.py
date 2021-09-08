@@ -171,7 +171,7 @@ def first_guess(candidate_solutions):
             if len(candidate_solutions[i, j]) != 1:
                 return candidate_solutions[i, j], i, j
 
-def find_candidate_solutions(puzzle):
+def find_candidate_solutions(puzzle, master_set):
     candidate_solutions = np.empty((9, 9), dtype=set)
 
     for i in range(9):
@@ -190,6 +190,45 @@ def find_candidate_solutions(puzzle):
                                                         set(puzzle[row_sec:row_sec+3, col_sec:col_sec+3].flatten()))                
 
     return candidate_solutions
+
+def check_solution(solution):
+    col_sec = 0
+    row_sec = 0
+
+    for i in range(9):
+        row_val = solution[i, :]
+
+        if i % 3 == 0:
+            row_sec = (i // 3)*3
+            sector_val = solution[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
+
+        for j in range(9):
+
+            cell_val = solution[i, j]
+
+            if j % 3 == 0:
+                col_sec = (j // 3)*3
+                sector_val = solution[row_sec:row_sec+3, col_sec:col_sec+3].flatten()
+
+            row_set = set.union(*(np.delete(row_val, j))) 
+            col_set = set.union(*(np.delete(solution[:, j], i)))
+            sector_set = set.union(*(np.delete(sector_val, (i-row_sec)*3 + (j-col_sec))))
+
+            fixed_solutions = row_set | col_set | sector_set
+
+            # print(solution)
+
+            if cell_val & fixed_solutions:
+                print(f"i = {i}, j = {j} has val {cell_val}")
+                print(f"row set: {row_set}")
+                print(f"row val: {row_val}")
+                print(f"col set: {col_set}")
+                print(f"sector set: {sector_set}")
+                print(f"sector val: {sector_val}")
+                raise Exception("INVALID SOLUTION")
+
+    return True
+
 
 # class Node:
 #     def __init__(self, value):
@@ -270,7 +309,7 @@ store_puzzles_2[5] = store_puzzles[5]
 for puzzle in store_puzzles.values():
 # for puzzle in store_puzzles_2.values():
 
-    candidate_solutions = find_candidate_solutions(puzzle)
+    candidate_solutions = find_candidate_solutions(puzzle, master_set)
 
 
     # print(candidate_solutions)
@@ -488,6 +527,8 @@ for puzzle in store_puzzles.values():
     # print(candidate_solutions)
 
     if solved:
+        # print(candidate_solutions)
+        check_solution(candidate_solutions)
         puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
         print(puzzle_sum)
         total_sum += puzzle_sum
