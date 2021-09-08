@@ -320,6 +320,99 @@ def solve_for_preemptive_sets(current_solutions, is_solved):
 
     return current_solutions, is_solved
 
+def solve_using_guessing(current_solutions, is_solved):
+    guess_depth = 0
+    prev_node = AnyNode(guess_val=None, soln=current_solutions)
+    root = prev_node
+
+    i = 0
+    j = 0
+
+    while i < 9 and j < 9 and not is_solved:
+        cell_val = current_solutions[i, j]
+        cell_len = len(cell_val)
+
+        if cell_len == 1:
+            j += 1
+            if j == 9:
+                i += 1
+                j = 0
+            continue
+
+        cell_val = list(cell_val)
+
+        curr_solution = deepcopy(current_solutions)
+
+        for val in cell_val:
+            guess = deepcopy(curr_solution)
+
+            fixed_vals = get_associated_vals(guess, i, j)
+
+            if fixed_vals & {val}:
+                AnyNode(
+                    parent=prev_node, guess_val=val, is_valid=False, index=(i, j)
+                )
+                continue
+
+            guess[i, j] = {val}
+
+            try:
+                temp = update_candidate_solutions(guess)
+            except Exception:
+                AnyNode(
+                    parent=prev_node, guess_val=val, is_valid=False, index=(i, j)
+                )
+                continue
+            else:
+                current_solutions = temp
+                AnyNode(
+                    parent=prev_node,
+                    guess_val=val,
+                    is_valid=True,
+                    index=(i, j),
+                    soln=temp,
+                )
+                is_solved = is_completely_solved(temp)
+                if is_solved:
+                    current_solutions = temp
+                    found_valid = True
+                    break
+
+        exit_counter = 0
+
+        found_valid = False
+        while not found_valid:
+            for child in list(prev_node.children):
+                if child.is_valid:
+                    guess_depth += 1
+                    prev_node = child
+                    i = child.index[0]
+                    j = child.index[1]
+                    current_solutions = child.soln
+                    found_valid = True
+                    break
+
+            if not found_valid:
+                prev_node.is_valid = False
+                prev_node.soln = None
+                prev_node = prev_node.parent
+                guess_depth -= 1
+
+                if prev_node is None:
+                    break
+
+            exit_counter += 1
+
+            is_solved = is_completely_solved(current_solutions)
+
+
+        if not found_valid:
+            print(RenderTree(root))
+            print("Invalid solution")
+            break
+    
+    return current_solutions, is_solved
+
 
 input_file = os.path.join(".", "problem_96", "p096_sudoku.txt")
 
@@ -347,30 +440,13 @@ for puzzle in all_puzzles.values():
     if not solved:
         candidate_solutions = update_candidate_solutions(candidate_solutions)
         solved = is_completely_solved(candidate_solutions)
-        # prev_num_sets_found = 1
-
-        # while not solved:
-        #     candidate_solutions, num_sets_found = solve_preemptive_sets(
-        #         candidate_solutions
-        #     )
-
-        #     solved = is_completely_solved(candidate_solutions)
-
-        #     if prev_num_sets_found == num_sets_found:
-        #         # print("Guessing required")
-        #         # print(candidate_solutions)
-        #         break
-
-        #     prev_num_sets_found = num_sets_found
         candidate_solutions, solved = solve_for_preemptive_sets(candidate_solutions, solved)
 
-
     if not solved:
+        candidate_solutions, solved = solve_using_guessing(candidate_solutions, solved)
         guess_depth = 0
-        name = str(guess_depth)
         prev_node = AnyNode(guess_val=None, soln=candidate_solutions)
         root = prev_node
-        prev_name = name
 
         i = 0
         j = 0
