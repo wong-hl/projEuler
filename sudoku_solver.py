@@ -1,5 +1,8 @@
-import numpy as np
+import os
 from copy import deepcopy
+
+import numpy as np
+
 from anytree import AnyNode, RenderTree
 
 
@@ -28,6 +31,7 @@ def find_trivial_solutions(solutions, which_subset):
                 continue
 
             this_subset = np.delete(subset, index)
+
             vals_in_other_sets = [x & candidate for x in this_subset]
             if vals_in_other_sets:
                 in_other_sets = set.union(*vals_in_other_sets)
@@ -150,12 +154,6 @@ def is_sufficiently_solved(solutions):
         return True
 
 
-def first_guess(solutions):
-    for i in range(9):
-        for j in range(9):
-            if len(solutions[i, j]) != 1:
-                return solutions[i, j], i, j
-
 
 def find_candidate_solutions(puzzle, master_set):
     candidate_solutions = np.empty((9, 9), dtype=set)
@@ -263,41 +261,62 @@ def puzzle_three_digit_num(solution_vals):
     multiplier = [100, 10, 1]
     return sum([val.pop()*mult for val, mult in zip(solution_vals, multiplier)])
 
+def extract_puzzles_from_file(file_path):
+    with open(file_path, "r") as f:
+        data = f.readlines()
 
-import os
+    store_puzzles = dict()
+    puzzle_counter = 0
+    row_counter = 0
+
+    for line in data:
+        if "Grid" in line:
+            store_puzzles[puzzle_counter] = np.zeros((9, 9), dtype=int)
+            puzzle_counter += 1
+            row_counter = 0
+        elif "End" in line:
+            return store_puzzles
+        else:
+            store_puzzles.get(puzzle_counter - 1)[row_counter, :] = np.asarray(
+                [int(x) for x in list(line.strip())]
+            )
+            row_counter += 1
+
+
 
 input_file = os.path.join(".", "problem_96", "p096_sudoku.txt")
 
-with open(input_file, "r") as f:
-    data = f.readlines()
+# with open(input_file, "r") as f:
+#     data = f.readlines()
 
-store_puzzles = dict()
-puzzle_counter = 0
-row_counter = 0
+# store_puzzles = dict()
+# puzzle_counter = 0
+# row_counter = 0
 
 
-for line in data:
-    if "Grid" in line:
-        store_puzzles[puzzle_counter] = np.zeros((9, 9), dtype=int)
-        puzzle_counter += 1
-        row_counter = 0
-    elif "End" in line:
-        break
-    else:
-        store_puzzles.get(puzzle_counter - 1)[row_counter, :] = np.asarray(
-            [int(x) for x in list(line.strip())]
-        )
-        row_counter += 1
+# for line in data:
+#     if "Grid" in line:
+#         store_puzzles[puzzle_counter] = np.zeros((9, 9), dtype=int)
+#         puzzle_counter += 1
+#         row_counter = 0
+#     elif "End" in line:
+#         break
+#     else:
+#         store_puzzles.get(puzzle_counter - 1)[row_counter, :] = np.asarray(
+#             [int(x) for x in list(line.strip())]
+#         )
+#         row_counter += 1
 
+all_puzzles = extract_puzzles_from_file(input_file)
 
 master_set = set(np.arange(1, 10))
 total_sum = 0
 subset_names = ["square", "row", "column"]
 
 store_puzzles_2 = dict()
-store_puzzles_2[6] = store_puzzles.get(6)
+store_puzzles_2[6] = all_puzzles.get(6)
 
-for puzzle in store_puzzles.values():
+for puzzle in all_puzzles.values():
 # for puzzle in store_puzzles_2.values():
 
     candidate_solutions = find_candidate_solutions(puzzle, master_set)
