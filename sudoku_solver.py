@@ -1,7 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from anytree import AnyNode, Node, RenderTree
-from numpy.linalg import solve
+from anytree import AnyNode, RenderTree
 
 
 def find_trivial_solutions(solutions, which_subset):
