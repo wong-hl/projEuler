@@ -3,7 +3,7 @@ from copy import deepcopy
 from anytree import AnyNode, Node, RenderTree
 
 
-def find_trivial_solutions(candidate_solutions, which_subset):
+def find_trivial_solutions(solutions, which_subset):
 
     num_solns = 0
 
@@ -12,12 +12,12 @@ def find_trivial_solutions(candidate_solutions, which_subset):
             row_index = (i//3)*3
             col_index = (i % 3)*3
 
-            subset = candidate_solutions[row_index:row_index +
+            subset = solutions[row_index:row_index +
                                          3, col_index:col_index+3].flatten()
         elif which_subset == "row":
-            subset = candidate_solutions[i, :]
+            subset = solutions[i, :]
         elif which_subset == "column":
-            subset = candidate_solutions[:, i]
+            subset = solutions[:, i]
 
         for index, _ in enumerate(subset):
 
@@ -37,31 +37,31 @@ def find_trivial_solutions(candidate_solutions, which_subset):
                     num_solns += 1
 
         if which_subset == "square":
-            candidate_solutions[row_index:row_index+3,
+            solutions[row_index:row_index+3,
                                 col_index:col_index+3] = np.asarray(subset).reshape(3, 3)
         elif which_subset == "row":
-            candidate_solutions[i, :] = np.asarray(subset)
+            solutions[i, :] = np.asarray(subset)
         elif which_subset == "column":
-            candidate_solutions[:, i] = np.asarray(subset)
+            solutions[:, i] = np.asarray(subset)
 
-    candidate_solutions = update_candidate_solutions(candidate_solutions)
+    solutions = update_candidate_solutions(solutions)
 
-    return candidate_solutions, num_solns
+    return solutions, num_solns
 
 
-def update_candidate_solutions(candidate_solutions):
+def update_candidate_solutions(solutions):
     for i in range(9):
         for j in range(9):
 
-            cell_val = candidate_solutions[i, j]
+            cell_val = solutions[i, j]
 
             if len(cell_val) != 1:
                 col_sec = (j // 3)*3
                 row_sec = (i // 3)*3
 
-                row_vals = [x for x in candidate_solutions[i, :] if len(x) == 1]
-                col_vals = [x for x in candidate_solutions[:, j] if len(x) == 1]
-                sector_vals = [x for x in candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1]
+                row_vals = [x for x in solutions[i, :] if len(x) == 1]
+                col_vals = [x for x in solutions[:, j] if len(x) == 1]
+                sector_vals = [x for x in solutions[row_sec:row_sec+3, col_sec:col_sec+3].flatten() if len(x) == 1]
 
                 if row_vals:
                     row = set.union(*row_vals)
@@ -83,11 +83,11 @@ def update_candidate_solutions(candidate_solutions):
                 if cell_val & fixed_solutions:
                     difference = cell_val - fixed_solutions
                     if difference:
-                        candidate_solutions[i, j] = difference
+                        solutions[i, j] = difference
                     else:
                         raise Exception("Invalid solution present")
 
-    return candidate_solutions
+    return solutions
 
 
 def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
@@ -106,70 +106,78 @@ def update_subset_preemptive(mask, candidate_set_subset, preemptive_set):
     # print()
     return np.asarray([val - (val & preemptive_set) if len(val) != 1 and not in_set else val for val, in_set in zip(candidate_set_subset, mask)])
 
+# def update_associated_values(index_row, index_col, candidate_solutions):
+#     return candidate_solutions
 
-def solve_preemptive_sets(candidate_solutions):
+
+def solve_preemptive_sets(solutions):
     num_sets_found = 0
     for i in range(9):
         for j in range(9):
             col_sec = (j // 3)*3
             row_sec = (i // 3)*3
 
-            cell_val = candidate_solutions[i, j]
+            cell_val = solutions[i, j]
             cell_len = len(cell_val)
 
             if cell_len == 1:
                 continue
 
-            row_mask = candidate_solutions[i, :] <= cell_val
-            col_mask = candidate_solutions[:, j] <= cell_val
-            sector_mask = candidate_solutions[row_sec:row_sec +
-                                              3, col_sec:col_sec+3] <= cell_val
+            row_mask = solutions[i, :] <= cell_val
 
             if row_mask.sum() == cell_len:
-                candidate_solutions[i, :] = update_subset_preemptive(
-                    row_mask, candidate_solutions[i, :], cell_val)
+                solutions[i, :] = update_subset_preemptive(
+                    row_mask, solutions[i, :], cell_val)
+                solutions = update_candidate_solutions(solutions)
                 num_sets_found += 1
+
+            col_mask = solutions[:, j] <= cell_val
 
             if col_mask.sum() == cell_len:
-                candidate_solutions[:, j] = update_subset_preemptive(
-                    col_mask, candidate_solutions[:, j], cell_val)
+                solutions[:, j] = update_subset_preemptive(
+                    col_mask, solutions[:, j], cell_val)
+                solutions = update_candidate_solutions(solutions)
                 num_sets_found += 1
+
+            sector_mask = solutions[row_sec:row_sec +
+                                              3, col_sec:col_sec+3] <= cell_val
 
             if sector_mask.sum() == cell_len:
-                sector = candidate_solutions[row_sec:row_sec +
+                sector = solutions[row_sec:row_sec +
                                              3, col_sec:col_sec+3].flatten()
                 sector_mask = sector_mask.flatten()
-                candidate_solutions[row_sec:row_sec+3, col_sec:col_sec+3] = update_subset_preemptive(
+                solutions[row_sec:row_sec+3, col_sec:col_sec+3] = update_subset_preemptive(
                     sector_mask, sector, cell_val).reshape((3, 3))
+                solutions = update_candidate_solutions(solutions)
                 num_sets_found += 1
 
-    candidate_solutions = update_candidate_solutions(candidate_solutions)
+    solutions = update_candidate_solutions(solutions)
 
-    return candidate_solutions, num_sets_found
+    return solutions, num_sets_found
 
 
-def is_completely_solved(candidate_solutions):
+def is_completely_solved(solutions):
     length_checker = np.vectorize(len)
-    what_lengths = length_checker(candidate_solutions) == 1
+    what_lengths = length_checker(solutions) == 1
     if what_lengths.sum() == 81:
         return True
     else:
         return False
 
 
-def is_sufficiently_solved(candidate_solutions):
-    target_cells = [1 for x in candidate_solutions[0, 0:3] if len(x) != 1]
+def is_sufficiently_solved(solutions):
+    target_cells = [1 for x in solutions[0, 0:3] if len(x) != 1]
     if target_cells:
         return False
     else:
         return True
 
 
-def first_guess(candidate_solutions):
+def first_guess(solutions):
     for i in range(9):
         for j in range(9):
-            if len(candidate_solutions[i, j]) != 1:
-                return candidate_solutions[i, j], i, j
+            if len(solutions[i, j]) != 1:
+                return solutions[i, j], i, j
 
 def find_candidate_solutions(puzzle, master_set):
     candidate_solutions = np.empty((9, 9), dtype=set)
@@ -304,10 +312,10 @@ master_set = set(np.arange(1, 10))
 total_sum = 0
 
 store_puzzles_2 = dict()
-store_puzzles_2[5] = store_puzzles[5]
+store_puzzles_2[5] = store_puzzles.get(5)
 
-for puzzle in store_puzzles.values():
-# for puzzle in store_puzzles_2.values():
+# for puzzle in store_puzzles.values():
+for puzzle in store_puzzles_2.values():
 
     candidate_solutions = find_candidate_solutions(puzzle, master_set)
 
@@ -349,6 +357,8 @@ for puzzle in store_puzzles.values():
                 candidate_solutions)
 
             solved = is_completely_solved(candidate_solutions)
+
+            # print(num_sets_found)
 
             if prev_num_sets_found == num_sets_found:
                 print("Guessing required")
@@ -402,7 +412,7 @@ for puzzle in store_puzzles.values():
         i = 0
         j = 0
 
-        while i < 9 and j < 9:
+        while i < 9 and j < 9 and not solved:
             # for j in range(9):
             else_reached = False
 
@@ -419,8 +429,10 @@ for puzzle in store_puzzles.values():
 
             cell_val = list(cell_val)
 
+            curr_solution = deepcopy(candidate_solutions)
+
             for index, val in enumerate(cell_val):
-                guess = deepcopy(candidate_solutions)
+                guess = deepcopy(curr_solution)
                 guess[i, j] = {val}
                 try:
                     temp = update_candidate_solutions(guess)
@@ -470,6 +482,7 @@ for puzzle in store_puzzles.values():
                     prev_node.is_valid = False
                     prev_node.soln = None
                     prev_node = prev_node.parent
+                    # print(RenderTree(root))
                     # print(prev_node)
                     guess_depth -= 1
 
@@ -478,8 +491,8 @@ for puzzle in store_puzzles.values():
 
                 exit_counter += 1
 
-                if exit_counter > 5:
-                    break
+                # if exit_counter > 5:
+                #     break
 
 
             # print(RenderTree(root))
@@ -490,6 +503,8 @@ for puzzle in store_puzzles.values():
                 # print(candidate_solutions)
                 print("Invalid solution")
                 break
+
+            solved = is_completely_solved(candidate_solutions)
 
             # guess_depth += 1
             # prev_name = name
@@ -525,9 +540,10 @@ for puzzle in store_puzzles.values():
 
 
     # print(candidate_solutions)
+    # print(exit_counter)
 
     if solved:
-        # print(candidate_solutions)
+        print(candidate_solutions)
         check_solution(candidate_solutions)
         puzzle_sum = sum([val.pop() for val in candidate_solutions[0, 0:3]])
         print(puzzle_sum)
