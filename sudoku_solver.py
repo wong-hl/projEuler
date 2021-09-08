@@ -282,7 +282,7 @@ def extract_puzzles_from_file(file_path):
             )
             row_counter += 1
 
-def compute_trivial_solutions(current_solutions, is_solved):
+def solve_for_trivial_solutions(current_solutions, is_solved):
     total_no_soln = 0
     total_iters = 0
 
@@ -298,6 +298,25 @@ def compute_trivial_solutions(current_solutions, is_solved):
 
         if total_no_soln > 2:
             break
+
+    return current_solutions, is_solved
+
+def solve_for_preemptive_sets(current_solutions, is_solved):
+    prev_num_sets_found = 1
+
+    while not is_solved:
+        current_solutions, num_sets_found = solve_preemptive_sets(
+            current_solutions
+        )
+
+        is_solved = is_completely_solved(current_solutions)
+
+        if prev_num_sets_found == num_sets_found:
+            # print("Guessing required")
+            # print(candidate_solutions)
+            break
+
+        prev_num_sets_found = num_sets_found
 
     return current_solutions, is_solved
 
@@ -323,26 +342,27 @@ for puzzle in all_puzzles.values():
 
     solved = is_completely_solved(candidate_solutions)
 
-    candidate_solutions, solved = compute_trivial_solutions(candidate_solutions, solved)
+    candidate_solutions, solved = solve_for_trivial_solutions(candidate_solutions, solved)
 
     if not solved:
         candidate_solutions = update_candidate_solutions(candidate_solutions)
         solved = is_completely_solved(candidate_solutions)
-        prev_num_sets_found = 1
+        # prev_num_sets_found = 1
 
-        while not solved:
-            candidate_solutions, num_sets_found = solve_preemptive_sets(
-                candidate_solutions
-            )
+        # while not solved:
+        #     candidate_solutions, num_sets_found = solve_preemptive_sets(
+        #         candidate_solutions
+        #     )
 
-            solved = is_completely_solved(candidate_solutions)
+        #     solved = is_completely_solved(candidate_solutions)
 
-            if prev_num_sets_found == num_sets_found:
-                print("Guessing required")
-                print(candidate_solutions)
-                break
+        #     if prev_num_sets_found == num_sets_found:
+        #         # print("Guessing required")
+        #         # print(candidate_solutions)
+        #         break
 
-            prev_num_sets_found = num_sets_found
+        #     prev_num_sets_found = num_sets_found
+        candidate_solutions, solved = solve_for_preemptive_sets(candidate_solutions, solved)
 
 
     if not solved:
