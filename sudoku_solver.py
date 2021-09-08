@@ -1,3 +1,14 @@
+'''
+    Script to solve sudoku
+
+    Note:   This was originally created for experimentation before implementing in
+            Rust. However, this ended up becoming a full fledged sudoku solver.
+
+            As it was meant as a prototype, best practices have not been adhered to
+            and object oriented programming wasn't used. 
+'''
+
+
 import os
 from copy import deepcopy
 
