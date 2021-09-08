@@ -282,30 +282,27 @@ def extract_puzzles_from_file(file_path):
             )
             row_counter += 1
 
+def compute_trivial_solutions(current_solutions, is_solved):
+    total_no_soln = 0
+    total_iters = 0
+
+    while not is_solved:
+        counter = total_iters % 3
+        current_solutions, num_sol_found = find_trivial_solutions(
+            current_solutions, subset_names[counter]
+        )
+        is_solved = is_completely_solved(current_solutions)
+
+        if num_sol_found == 0:
+            total_no_soln += 1
+
+        if total_no_soln > 2:
+            break
+
+    return current_solutions, is_solved
 
 
 input_file = os.path.join(".", "problem_96", "p096_sudoku.txt")
-
-# with open(input_file, "r") as f:
-#     data = f.readlines()
-
-# store_puzzles = dict()
-# puzzle_counter = 0
-# row_counter = 0
-
-
-# for line in data:
-#     if "Grid" in line:
-#         store_puzzles[puzzle_counter] = np.zeros((9, 9), dtype=int)
-#         puzzle_counter += 1
-#         row_counter = 0
-#     elif "End" in line:
-#         break
-#     else:
-#         store_puzzles.get(puzzle_counter - 1)[row_counter, :] = np.asarray(
-#             [int(x) for x in list(line.strip())]
-#         )
-#         row_counter += 1
 
 all_puzzles = extract_puzzles_from_file(input_file)
 
@@ -326,20 +323,7 @@ for puzzle in all_puzzles.values():
 
     solved = is_completely_solved(candidate_solutions)
 
-    while not solved:
-        counter = total_iters % 3
-        candidate_solutions, num_sol_found = find_trivial_solutions(
-            candidate_solutions, subset_names[counter]
-        )
-        solved = is_completely_solved(candidate_solutions)
-
-        if num_sol_found == 0:
-            total_no_soln += 1
-            # print(total_iters)
-
-        if total_no_soln > 2:
-            # print("No trivial solution found")
-            break
+    candidate_solutions, solved = compute_trivial_solutions(candidate_solutions, solved)
 
     if not solved:
         candidate_solutions = update_candidate_solutions(candidate_solutions)
