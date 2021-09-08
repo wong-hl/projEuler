@@ -570,6 +570,10 @@ if __name__ == "__main__":
     store_puzzles_2 = dict()
     store_puzzles_2[6] = all_puzzles.get(6)
 
+    trivial = 0
+    preempt = 0
+    guess = 0
+
     for puzzle in all_puzzles.values():
         # for puzzle in store_puzzles_2.values():
 
@@ -585,9 +589,14 @@ if __name__ == "__main__":
             candidate_solutions, solved = solve_for_preemptive_sets(
                 candidate_solutions, solved
             )
+        else:
+            trivial += 1
 
         if not solved:
             candidate_solutions, solved = solve_using_guessing(candidate_solutions, solved)
+            guess += 1
+        else:
+            preempt += 1
 
         if solved:
             check_solution(candidate_solutions)
@@ -595,3 +604,4 @@ if __name__ == "__main__":
             total_sum += puzzle_sum
 
     print(f"Total sum: {total_sum}")
+    print(f"Solved by: \n\tTrivial Method: {trivial} \n\tPreempt Method: {preempt} \n\tGuessing: {guess}")
