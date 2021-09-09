@@ -102,9 +102,10 @@ where
         .map(|(index, value)| {
             if value != &T::zero() {
                 GridCell::new(Some(*value), None)
-            } else if let Some(candidate_solutions) = find_candidate_solutions(index, puzzle) {
+            } else if let Some(mut candidate_solutions) = find_candidate_solutions(index, puzzle) {
                 if candidate_solutions.len() == 1 {
-                    GridCell::new(&candidate_solutions.drain().collect::<Vec<T>>().pop(), None)
+                    let solution = candidate_solutions.drain().next();
+                    GridCell::new(solution, None)
                 } else {
                     GridCell::new(None, Some(candidate_solutions))
                 }
