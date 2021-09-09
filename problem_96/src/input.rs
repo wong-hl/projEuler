@@ -54,15 +54,17 @@ pub fn process_input(
         //     line.chars()
         //         .for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
         // }
-        if counter == 0 {
-            continue;
-        }
-        else if line.contains(identifier.as_str()) || line.contains("End"){
-            let grid_num = counter/10;
+        if line.contains(identifier.as_str()) || line.contains("End"){
+            if storage_vector.is_empty() {
+                continue;
+            }
+            // Each puzzle contains 10 lines and -1 converts it to 0 index
+            let grid_num = counter/10 - 1 ;
             sorted_input.insert(
                 grid_num,
                 storage_vector
             );
+            // Create vector for next puzzle
             storage_vector = Vec::with_capacity(81);
         } else {
             line.chars()
