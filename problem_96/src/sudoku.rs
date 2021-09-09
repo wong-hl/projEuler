@@ -1,3 +1,4 @@
+use core::panic;
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::convert::From;
@@ -47,6 +48,11 @@ where
 {
     fn new(solution: Option<T>, candidates: Option<HashSet<T>>) -> GridCell<T> {
         let is_solved = solution != None;
+
+        if solution == None && candidates == None {
+            panic!("Both solution and candidates are None")
+        }
+
         GridCell {
             solution,
             candidates,
@@ -64,13 +70,16 @@ where
     let column_index = index % 9;
     let sector_num = (row_index / 3) * 3 + column_index / 3;
 
+    // No need to remove value in this cell as it will be 0
     let row_vals: HashSet<T> = get_row_values(row_index, puzzle).into_iter().collect();
     let col_vals: HashSet<T> = get_column_values(column_index, puzzle)
         .into_iter()
         .collect();
     let sec_vals: HashSet<T> = get_sector_values(sector_num, puzzle).into_iter().collect();
 
+    // Find union of all values related to cell
     let associated_vals: HashSet<T> = &(&row_vals | &col_vals) | &sec_vals;
+    // Create set that contains 1 to 9
     let possible_vals: HashSet<T> = (1_u8..=9).map(|x| x.into()).into_iter().collect();
 
     let candidate_vals = &possible_vals - &(&possible_vals & &associated_vals);
@@ -93,8 +102,14 @@ where
         .map(|(index, value)| {
             if value != &T::zero() {
                 GridCell::new(Some(*value), None)
+            } else if let Some(candidate_solutions) = find_candidate_solutions(index, puzzle) {
+                if candidate_solutions.len() == 1 {
+                    GridCell::new(&candidate_solutions.drain().collect::<Vec<T>>().pop(), None)
+                } else {
+                    GridCell::new(None, Some(candidate_solutions))
+                }
             } else {
-                GridCell::new(None, find_candidate_solutions(index, puzzle))
+                GridCell::new(None, None)
             }
         })
         .collect::<Vec<GridCell<T>>>()
