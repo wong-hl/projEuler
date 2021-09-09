@@ -99,18 +99,21 @@ where
     puzzle
         .iter()
         .enumerate()
-        .map(|(index, value)| {
+        .map(|(index, value)| -> GridCell<T> {
             if value != &T::zero() {
                 GridCell::new(Some(*value), None)
-            } else if let Some(mut candidate_solutions) = find_candidate_solutions(index, puzzle) {
-                if candidate_solutions.len() == 1 {
-                    let solution = candidate_solutions.drain().next();
-                    GridCell::new(solution, None)
-                } else {
-                    GridCell::new(None, Some(candidate_solutions))
-                }
             } else {
-                GridCell::new(None, None)
+                match find_candidate_solutions(index, puzzle) {
+                    Some(mut candidate_solutions) => {
+                        if candidate_solutions.len() == 1 {
+                            let solution = candidate_solutions.drain().next();
+                            GridCell::new(solution, None)
+                        } else {
+                            GridCell::new(None, Some(candidate_solutions))
+                        }
+                    }
+                    None => GridCell::new(None, None),
+                }
             }
         })
         .collect::<Vec<GridCell<T>>>()
