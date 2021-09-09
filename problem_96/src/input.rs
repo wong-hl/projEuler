@@ -1,4 +1,4 @@
-use ndarray::{Array, Array2};
+// use ndarray::{Array, Array2};
 use std::{collections::HashMap, fs::File, io::prelude::*, path::Path};
 
 fn read_from_file(file_name: String) -> Result<String, String> {
@@ -25,29 +25,48 @@ pub fn process_input(
     file_name: String,
     num_puzzles: usize,
     identifier: String,
-) -> Result<HashMap<usize, Array2<u32>>, String> {
+) -> Result<HashMap<usize, Vec<u8>>, String> {
+// ) -> Result<HashMap<usize, Array2<u32>>, String> {
     let file_contents = read_from_file(file_name)?;
 
+    // let mut sorted_input: HashMap<
+    //     usize,
+    //     ndarray::ArrayBase<ndarray::OwnedRepr<u32>, ndarray::Dim<[usize; 2]>>,
+    // > = HashMap::with_capacity(num_puzzles);
     let mut sorted_input: HashMap<
         usize,
-        ndarray::ArrayBase<ndarray::OwnedRepr<u32>, ndarray::Dim<[usize; 2]>>,
+        Vec<u8>
     > = HashMap::with_capacity(num_puzzles);
 
-    let mut storage_vector: Vec<u32> = Vec::with_capacity(81);
+    let mut storage_vector: Vec<u8> = Vec::with_capacity(81);
 
     for (counter, line) in file_contents.lines().enumerate() {
+        // if counter == 0 {
+        //     continue;
+        // } else if line.contains(identifier.as_str()) || line.contains("End") {
+        //     let grid_num = counter / 10;
+        //     sorted_input.insert(
+        //         grid_num,
+        //         Array::from_shape_vec((9, 9), storage_vector).expect("Unable to reshape to 9 by 9"),
+        //     );
+        //     storage_vector = Vec::with_capacity(81);
+        // } else {
+        //     line.chars()
+        //         .for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
+        // }
         if counter == 0 {
             continue;
-        } else if line.contains(identifier.as_str()) || line.contains("End") {
-            let grid_num = counter / 10;
+        }
+        else if line.contains(identifier.as_str()) || line.contains("End"){
+            let grid_num = counter/10;
             sorted_input.insert(
                 grid_num,
-                Array::from_shape_vec((9, 9), storage_vector).expect("Unable to reshape to 9 by 9"),
+                storage_vector
             );
             storage_vector = Vec::with_capacity(81);
         } else {
             line.chars()
-                .for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap()));
+                .for_each(|ch| storage_vector.push(ch.to_digit(10).unwrap() as u8));
         }
     }
 
