@@ -66,6 +66,6 @@ fn path_to_file_works() {
 #[test]
 fn process_input_works() {
     let output = process_input(String::from("p096_sudoku.txt"), 50, String::from("Grid")).unwrap();
-    println!("{:?}", output);
+    // println!("{:?}", output);
     assert!(!output.is_empty());
 }
