@@ -119,6 +119,13 @@ where
         .collect::<Vec<GridCell<T>>>()
 }
 
+fn is_grid_solved<T>(sudoku_grid: &[GridCell<T>]) -> bool
+where
+    T: Copy + Integer + Hash,
+{
+    !sudoku_grid.iter().any(|cell| -> bool { !cell.is_solved })
+}
+
 mod tests {
     #[test]
     fn test_get_row_values() {
