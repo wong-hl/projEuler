@@ -1,4 +1,4 @@
-use num::ToPrimitive;
+use num::{FromPrimitive, ToPrimitive};
 
 fn seive<T>(n: T) -> Vec<bool>
 where
@@ -27,10 +27,16 @@ where
     }
 }
 
-pub fn prime_numbers_upto<T: ToPrimitive>(maximum_num: T) -> Vec<usize> {
+pub fn prime_numbers_upto<T: ToPrimitive + FromPrimitive>(maximum_num: T) -> Vec<T> {
     seive(maximum_num)
         .iter()
         .enumerate()
-        .filter_map(|(index, is_prime)| if *is_prime { Some(index + 2) } else { None })
+        .filter_map(|(index, is_prime)| -> Option<T> {
+            if *is_prime {
+                T::from_usize(index + 2)
+            } else {
+                None
+            }
+        })
         .collect()
 }
