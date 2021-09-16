@@ -1,4 +1,9 @@
-// use num::Integer;
+use std::{
+    collections::HashSet,
+    hash::Hash,
+    ops::{Add, Mul},
+};
+
 use num::integer::Roots;
 
 #[derive(Debug)]
@@ -40,4 +45,31 @@ where
     pub fn get_cube(&self) -> &T {
         &self.cube
     }
+}
+
+fn compute_triple<T>(prime_square: T, prime_cube: T, prime_fourth: T) -> T
+where
+    T: Mul<Output = T> + Add<Output = T> + Copy,
+{
+    prime_square * prime_square
+        + prime_cube * prime_cube * prime_cube
+        + prime_fourth * prime_fourth * prime_fourth * prime_fourth
+}
+
+pub fn prime_power_triples_solutions<T>(
+    limits: PrimeBaseLimits<T>,
+    valid_primes: Vec<T>,
+) -> HashSet<T>
+where
+    T: Roots + Hash + Copy,
+{
+    let mut solutions: HashSet<T> = HashSet::with_capacity(valid_primes.len() * valid_primes.len());
+    for prime_fourth in valid_primes.iter().filter(|val| val > &limits.get_fourth()) {
+        for prime_cube in valid_primes.iter().filter(|val| val > &limits.get_cube()) {
+            for prime_square in valid_primes.iter().filter(|val| val > &limits.get_square()) {
+                solutions.insert(compute_triple(*prime_square, *prime_cube, *prime_fourth));
+            }
+        }
+    }
+    solutions
 }
