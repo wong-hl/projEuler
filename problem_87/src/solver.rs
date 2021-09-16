@@ -2,7 +2,7 @@
 use num::integer::Roots;
 
 #[derive(Debug)]
-struct PrimeBaseLimits<T>
+pub struct PrimeBaseLimits<T>
 where
     T: Roots,
 {
@@ -15,7 +15,7 @@ impl<T> PrimeBaseLimits<T>
 where
     T: Roots,
 {
-    fn new(upper_limit: T) -> Self {
+    pub fn new(upper_limit: T) -> Self {
         let square = upper_limit.nth_root(2);
         let cube = upper_limit.nth_root(3);
         let fourth = upper_limit.nth_root(4);
@@ -24,5 +24,20 @@ where
             cube,
             fourth,
         }
+    }
+
+    /// Get a reference to the prime base limits's square.
+    pub fn get_square(&self) -> &T {
+        &self.square
+    }
+
+    /// Get a reference to the prime base limits's fourth.
+    pub fn get_fourth(&self) -> &T {
+        &self.fourth
+    }
+
+    /// Get a reference to the prime base limits's cube.
+    pub fn get_cube(&self) -> &T {
+        &self.cube
     }
 }
