@@ -65,15 +65,25 @@ where
     T: Roots + Hash + Copy,
 {
     let mut solutions: HashSet<T> = HashSet::with_capacity(valid_primes.len() * valid_primes.len());
-    for prime_fourth in valid_primes.iter().filter(|val| val <= &limits.get_fourth()) {
-        for prime_cube in valid_primes.iter().filter(|val| val <= &limits.get_cube()) {
-            for prime_square in valid_primes.iter().filter(|val| val <= &limits.get_square()) {
-                let triple_sum = compute_triple(*prime_square, *prime_cube, *prime_fourth);
-                if triple_sum < maximum_sum {
-                    solutions.insert(triple_sum);
-                }
-            }
-        }
-    }
+    valid_primes
+        .iter()
+        .filter(|val| val <= &limits.get_fourth())
+        .for_each(|prime_fourth| {
+            valid_primes
+                .iter()
+                .filter(|val| val <= &limits.get_cube())
+                .for_each(|prime_cube| {
+                    valid_primes
+                        .iter()
+                        .filter(|val| val <= &limits.get_square())
+                        .for_each(|prime_square| {
+                            let triple_sum =
+                                compute_triple(*prime_square, *prime_cube, *prime_fourth);
+                            if triple_sum < maximum_sum {
+                                solutions.insert(triple_sum);
+                            }
+                        });
+                });
+        });
     solutions
 }
