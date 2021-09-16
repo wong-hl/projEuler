@@ -59,15 +59,19 @@ where
 pub fn prime_power_triples_solutions<T>(
     limits: PrimeBaseLimits<T>,
     valid_primes: Vec<T>,
+    maximum_sum: T,
 ) -> HashSet<T>
 where
     T: Roots + Hash + Copy,
 {
     let mut solutions: HashSet<T> = HashSet::with_capacity(valid_primes.len() * valid_primes.len());
-    for prime_fourth in valid_primes.iter().filter(|val| val > &limits.get_fourth()) {
-        for prime_cube in valid_primes.iter().filter(|val| val > &limits.get_cube()) {
-            for prime_square in valid_primes.iter().filter(|val| val > &limits.get_square()) {
-                solutions.insert(compute_triple(*prime_square, *prime_cube, *prime_fourth));
+    for prime_fourth in valid_primes.iter().filter(|val| val <= &limits.get_fourth()) {
+        for prime_cube in valid_primes.iter().filter(|val| val <= &limits.get_cube()) {
+            for prime_square in valid_primes.iter().filter(|val| val <= &limits.get_square()) {
+                let triple_sum = compute_triple(*prime_square, *prime_cube, *prime_fourth);
+                if triple_sum < maximum_sum {
+                    solutions.insert(triple_sum);
+                }
             }
         }
     }
